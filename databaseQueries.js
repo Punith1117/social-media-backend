@@ -42,8 +42,141 @@ const validateUserCredentials = async (username) => {
     }
 };
 
+const findUserById = async (id) => {
+    try {
+        const user = await prisma.user.findUnique({
+            where: { id }
+        });
+        return user;
+    } catch (error) {
+        console.error('Error finding user by id:', error);
+        throw new Error('Database error while finding user');
+    }
+};
+
+const createFollow = async (followerId, followingId) => {
+    try {
+        const follow = await prisma.follow.create({
+            data: {
+                followerId,
+                followingId
+            }
+        });
+        return follow;
+    } catch (error) {
+        if (error.code === 'P2002') {
+            throw new Error('Already following this user');
+        }
+        console.error('Error creating follow:', error);
+        throw new Error('Database error while creating follow');
+    }
+};
+
+const deleteFollow = async (followerId, followingId) => {
+    try {
+        const follow = await prisma.follow.delete({
+            where: {
+                followerId_followingId: {
+                    followerId,
+                    followingId
+                }
+            }
+        });
+        return follow;
+    } catch (error) {
+        if (error.code === 'P2025') {
+            throw new Error('Not following this user');
+        }
+        console.error('Error deleting follow:', error);
+        throw new Error('Database error while deleting follow');
+    }
+};
+
+const getFollowers = async (userId) => {
+    try {
+        const followers = await prisma.follow.findMany({
+            where: { followingId: userId },
+            include: {
+                follower: {
+                    select: {
+                        id: true,
+                        username: true,
+                        createdAt: true
+                    }
+                }
+            }
+        });
+        return followers.map(f => f.follower);
+    } catch (error) {
+        console.error('Error getting followers:', error);
+        throw new Error('Database error while getting followers');
+    }
+};
+
+const getFollowing = async (userId) => {
+    try {
+        const following = await prisma.follow.findMany({
+            where: { followerId: userId },
+            include: {
+                following: {
+                    select: {
+                        id: true,
+                        username: true,
+                        createdAt: true
+                    }
+                }
+            }
+        });
+        return following.map(f => f.following);
+    } catch (error) {
+        console.error('Error getting following:', error);
+        throw new Error('Database error while getting following');
+    }
+};
+
+const getFollowStats = async (userId, currentUserId = null) => {
+    try {
+        const [followersCount, followingCount] = await Promise.all([
+            prisma.follow.count({
+                where: { followingId: userId }
+            }),
+            prisma.follow.count({
+                where: { followerId: userId }
+            })
+        ]);
+
+        let isFollowing = false;
+        if (currentUserId) {
+            const followRelation = await prisma.follow.findUnique({
+                where: {
+                    followerId_followingId: {
+                        followerId: currentUserId,
+                        followingId: userId
+                    }
+                }
+            });
+            isFollowing = !!followRelation;
+        }
+
+        return {
+            followersCount,
+            followingCount,
+            isFollowing
+        };
+    } catch (error) {
+        console.error('Error getting follow stats:', error);
+        throw new Error('Database error while getting follow stats');
+    }
+};
+
 module.exports = {
     findUserByUsername,
+    findUserById,
     createUser,
-    validateUserCredentials
+    validateUserCredentials,
+    createFollow,
+    deleteFollow,
+    getFollowers,
+    getFollowing,
+    getFollowStats
 };

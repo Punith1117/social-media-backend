@@ -13,6 +13,9 @@ app.use(passport.initialize());
 const authRoutes = require('./routes/auth');
 app.use('/auth', authRoutes);
 
+const followRoutes = require('./routes/follow');
+app.use('/follow', followRoutes);
+
 app.get('/health', (req, res) => {
     res.status(200).json({ status: 'ok' });
 });

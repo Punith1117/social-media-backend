@@ -37,7 +37,18 @@ const authenticate = (req, res, next) => {
     })(req, res, next);
 };
 
+const optionalAuth = (req, res, next) => {
+    passport.authenticate('jwt', { session: false }, (err, user, info) => {
+        if (err) {
+            return next(); // Continue without user on error
+        }
+        req.user = user || null; // Set user or null
+        next();
+    })(req, res, next);
+};
+
 module.exports = {
     authenticate,
+    optionalAuth,
     passport
 };
