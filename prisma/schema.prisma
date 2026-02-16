@@ -13,10 +13,12 @@ datasource db {
 }
 
 model User {
-  id        Int      @id @default(autoincrement())
-  username  String   @unique
-  password  String
-  createdAt DateTime @default(now())
+  id          Int      @id @default(autoincrement())
+  username    String   @unique
+  password    String
+  displayName String?  // Optional display name
+  bio         String?  // Optional bio (max 500 chars)
+  createdAt   DateTime @default(now())
 
   followers  Follow[] @relation("UserFollowers")
   following  Follow[] @relation("UserFollowing")
