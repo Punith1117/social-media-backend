@@ -66,6 +66,110 @@ const formatErrorResponse = (message, field = null, statusCode = 400) => {
     return error;
 };
 
+const validator = require('validator');
+
+const containsXSSPatterns = (input) => {
+    // Use validator for common XSS patterns
+    const dangerousPatterns = [
+        'javascript:',
+        'vbscript:',
+        'data:',
+        'onload=',
+        'onerror=',
+        'onclick=',
+        'onmouseover=',
+        '@import',
+        'expression('
+    ];
+    
+    const lowerInput = input.toLowerCase();
+    return dangerousPatterns.some(pattern => lowerInput.includes(pattern));
+};
+
+const validateDisplayName = (displayName) => {
+    if (displayName !== undefined && displayName !== null && displayName.length > 0) {
+        // Use validator for length check
+        if (!validator.isLength(displayName, { min: 1, max: 50 })) {
+            return { valid: false, message: 'Display name must be at most 50 characters long', field: 'displayName' };
+        }
+        
+        // Use validator for character validation with Unicode support
+        if (!validator.matches(displayName, /^[\p{L}\p{N}\s.,!?':\-]+$/u)) {
+            return { 
+                valid: false, 
+                message: 'Display name contains invalid characters',
+                field: 'displayName'
+            };
+        }
+        
+        // Use validator for XSS detection
+        if (containsXSSPatterns(displayName)) {
+            return { 
+                valid: false, 
+                message: 'Display name contains potentially unsafe content',
+                field: 'displayName'
+            };
+        }
+    }
+    return { valid: true };
+};
+
+const validateBio = (bio) => {
+    if (bio !== undefined && bio !== null && bio.length > 0) {
+        // Use validator for length check
+        if (!validator.isLength(bio, { min: 1, max: 500 })) {
+            return { valid: false, message: 'Bio must be at most 500 characters long', field: 'bio' };
+        }
+        
+        // Use validator for XSS detection
+        if (containsXSSPatterns(bio)) {
+            return { 
+                valid: false, 
+                message: 'Bio contains potentially unsafe content',
+                field: 'bio'
+            };
+        }
+    }
+    return { valid: true };
+};
+
+const validateUserDetailsUpdate = (displayName, bio) => {
+    if (!displayName && !bio) {
+        return { valid: false, message: 'At least one of displayName or bio must be provided', field: 'userDetails' };
+    }
+    
+    const displayNameValidation = validateDisplayName(displayName);
+    if (!displayNameValidation.valid) {
+        return displayNameValidation;
+    }
+    
+    const bioValidation = validateBio(bio);
+    if (!bioValidation.valid) {
+        return bioValidation;
+    }
+    
+    return { valid: true };
+};
+
+const sanitizeInput = (input) => {
+    if (typeof input !== 'string') {
+        return input;
+    }
+    // Use validator for comprehensive sanitization
+    return validator.escape(validator.trim(input));
+};
+
+const validateInputType = (value, fieldName) => {
+    if (value !== undefined && value !== null && typeof value !== 'string') {
+        return { 
+            valid: false, 
+            message: `${fieldName} must be a string`,
+            field: fieldName
+        };
+    }
+    return { valid: true };
+};
+
 module.exports = {
     generateToken,
     verifyToken,
@@ -73,5 +177,10 @@ module.exports = {
     comparePassword,
     validateUsername,
     validatePassword,
-    formatErrorResponse
+    formatErrorResponse,
+    validateDisplayName,
+    validateBio,
+    validateUserDetailsUpdate,
+    sanitizeInput,
+    validateInputType
 };

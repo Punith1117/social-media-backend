@@ -169,6 +169,79 @@ const getFollowStats = async (userId, currentUserId = null) => {
     }
 };
 
+const updateUserDetails = async (userId, displayName, bio) => {
+    try {
+        const updateData = {};
+        
+        // Handle displayName - convert empty string to null
+        if (displayName !== undefined && displayName !== null) {
+            updateData.displayName = displayName.length > 0 ? displayName : null;
+        }
+        
+        // Handle bio - convert empty string to null
+        if (bio !== undefined && bio !== null) {
+            updateData.bio = bio.length > 0 ? bio : null;
+        }
+
+        const user = await prisma.user.update({
+            where: { id: userId },
+            data: updateData,
+            select: {
+                id: true,
+                username: true,
+                displayName: true,
+                bio: true,
+                createdAt: true
+            }
+        });
+        return user;
+    } catch (error) {
+        if (error.code === 'P2025') {
+            throw new Error('User not found');
+        }
+        console.error('Error updating user details:', error);
+        throw new Error('Database error while updating user details');
+    }
+};
+
+const getUserDetails = async (username) => {
+    try {
+        const user = await prisma.user.findUnique({
+            where: { username },
+            select: {
+                id: true,
+                username: true,
+                displayName: true,
+                bio: true,
+                createdAt: true
+            }
+        });
+        return user;
+    } catch (error) {
+        console.error('Error getting user details by username:', error);
+        throw new Error('Database error while getting user details');
+    }
+};
+
+const getUserDetailsById = async (userId) => {
+    try {
+        const user = await prisma.user.findUnique({
+            where: { id: userId },
+            select: {
+                id: true,
+                username: true,
+                displayName: true,
+                bio: true,
+                createdAt: true
+            }
+        });
+        return user;
+    } catch (error) {
+        console.error('Error getting user details by id:', error);
+        throw new Error('Database error while getting user details');
+    }
+};
+
 module.exports = {
     findUserByUsername,
     findUserById,
@@ -178,5 +251,8 @@ module.exports = {
     deleteFollow,
     getFollowers,
     getFollowing,
-    getFollowStats
+    getFollowStats,
+    updateUserDetails,
+    getUserDetails,
+    getUserDetailsById
 };
