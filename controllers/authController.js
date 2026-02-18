@@ -1,4 +1,4 @@
-const { findUserByUsername, createUser, validateUserCredentials } = require('../databaseQueries');
+const { findUserByUsername, createUser } = require('../databaseQueries');
 const { generateToken, hashPassword, comparePassword, validateUsername, validatePassword, formatErrorResponse } = require('../utils');
 
 const signup = async (req, res) => {
@@ -54,7 +54,7 @@ const login = async (req, res) => {
             return res.status(400).json(formatErrorResponse('Password is required', 'password'));
         }
 
-        const user = await validateUserCredentials(username);
+        const user = await findUserByUsername(username);
         if (!user) {
             return res.status(401).json(formatErrorResponse('Invalid username or password', 'password'));
         }

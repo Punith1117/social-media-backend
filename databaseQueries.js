@@ -30,14 +30,14 @@ const createUser = async (username, hashedPassword) => {
     }
 };
 
-const validateUserCredentials = async (username) => {
+const validateUserCredentials = async (userId) => {
     try {
         const user = await prisma.user.findUnique({
-            where: { username }
+            where: { id: userId }
         });
         return user;
     } catch (error) {
-        console.error('Error validating user credentials:', error);
+        console.error('Error validating user credentials by id:', error);
         throw new Error('Database error while validating credentials');
     }
 };

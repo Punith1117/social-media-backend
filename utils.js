@@ -6,7 +6,7 @@ const JWT_EXPIRY = '10m';
 
 const generateToken = (userId, username) => {
     return jwt.sign(
-        { userId, username },
+        { userId },
         JWT_SECRET,
         { expiresIn: JWT_EXPIRY }
     );
