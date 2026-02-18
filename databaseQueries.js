@@ -1,6 +1,6 @@
 const prisma = require('./prisma/prismaClient');
 
-const findUserByUsername = async (username) => {
+const getUserForAuth = async (username) => {
     try {
         const user = await prisma.user.findUnique({
             where: { username }
@@ -42,10 +42,17 @@ const validateUserCredentials = async (userId) => {
     }
 };
 
-const findUserById = async (id) => {
+const getUserDetailsById = async (id) => {
     try {
         const user = await prisma.user.findUnique({
-            where: { id }
+            where: { id },
+            select: {
+                id: true,
+                username: true,
+                displayName: true,
+                bio: true,
+                createdAt: true
+            }
         });
         return user;
     } catch (error) {
@@ -223,28 +230,10 @@ const getUserDetails = async (username) => {
     }
 };
 
-const getUserDetailsById = async (userId) => {
-    try {
-        const user = await prisma.user.findUnique({
-            where: { id: userId },
-            select: {
-                id: true,
-                username: true,
-                displayName: true,
-                bio: true,
-                createdAt: true
-            }
-        });
-        return user;
-    } catch (error) {
-        console.error('Error getting user details by id:', error);
-        throw new Error('Database error while getting user details');
-    }
-};
 
 module.exports = {
-    findUserByUsername,
-    findUserById,
+    getUserForAuth,
+    getUserDetailsById,
     createUser,
     validateUserCredentials,
     createFollow,
@@ -253,6 +242,5 @@ module.exports = {
     getFollowing,
     getFollowStats,
     updateUserDetails,
-    getUserDetails,
-    getUserDetailsById
+    getUserDetails
 };

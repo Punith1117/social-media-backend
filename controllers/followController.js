@@ -1,4 +1,4 @@
-const { createFollow, deleteFollow, getFollowers, getFollowing, getFollowStats, findUserById } = require('../databaseQueries');
+const { createFollow, deleteFollow, getFollowers, getFollowing, getFollowStats, getUserDetailsById } = require('../databaseQueries');
 const { formatErrorResponse } = require('../utils');
 
 const followUser = async (req, res) => {
@@ -16,7 +16,7 @@ const followUser = async (req, res) => {
             return res.status(400).json(formatErrorResponse('Cannot follow yourself', 'followingId'));
         }
 
-        const targetUser = await findUserById(followingIdNum);
+        const targetUser = await getUserDetailsById(followingIdNum);
         if (!targetUser) {
             return res.status(404).json(formatErrorResponse('User to follow not found', 'followingId'));
         }
