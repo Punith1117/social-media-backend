@@ -51,6 +51,7 @@ const getUserDetailsById = async (id) => {
                 username: true,
                 displayName: true,
                 bio: true,
+                profilePhotoUrl: true,
                 createdAt: true
             }
         });
@@ -176,7 +177,7 @@ const getFollowStats = async (userId, currentUserId = null) => {
     }
 };
 
-const updateUserDetails = async (userId, displayName, bio) => {
+const updateUserDetails = async (userId, displayName, bio, profilePhotoUrl) => {
     try {
         const updateData = {};
         
@@ -190,6 +191,11 @@ const updateUserDetails = async (userId, displayName, bio) => {
             updateData.bio = bio.length > 0 ? bio : null;
         }
 
+        // Handle profilePhotoUrl
+        if (profilePhotoUrl !== undefined) {
+            updateData.profilePhotoUrl = profilePhotoUrl;
+        }
+
         const user = await prisma.user.update({
             where: { id: userId },
             data: updateData,
@@ -198,6 +204,7 @@ const updateUserDetails = async (userId, displayName, bio) => {
                 username: true,
                 displayName: true,
                 bio: true,
+                profilePhotoUrl: true,
                 createdAt: true
             }
         });
@@ -220,6 +227,7 @@ const getUserDetails = async (username) => {
                 username: true,
                 displayName: true,
                 bio: true,
+                profilePhotoUrl: true,
                 createdAt: true
             }
         });
@@ -227,6 +235,54 @@ const getUserDetails = async (username) => {
     } catch (error) {
         console.error('Error getting user details by username:', error);
         throw new Error('Database error while getting user details');
+    }
+};
+
+const updateUserProfilePhoto = async (userId, profilePhotoUrl) => {
+    try {
+        const user = await prisma.user.update({
+            where: { id: userId },
+            data: { profilePhotoUrl },
+            select: {
+                id: true,
+                username: true,
+                displayName: true,
+                bio: true,
+                profilePhotoUrl: true,
+                createdAt: true
+            }
+        });
+        return user;
+    } catch (error) {
+        if (error.code === 'P2025') {
+            throw new Error('User not found');
+        }
+        console.error('Error updating user profile photo:', error);
+        throw new Error('Database error while updating profile photo');
+    }
+};
+
+const deleteUserProfilePhoto = async (userId) => {
+    try {
+        const user = await prisma.user.update({
+            where: { id: userId },
+            data: { profilePhotoUrl: null },
+            select: {
+                id: true,
+                username: true,
+                displayName: true,
+                bio: true,
+                profilePhotoUrl: true,
+                createdAt: true
+            }
+        });
+        return user;
+    } catch (error) {
+        if (error.code === 'P2025') {
+            throw new Error('User not found');
+        }
+        console.error('Error deleting user profile photo:', error);
+        throw new Error('Database error while deleting profile photo');
     }
 };
 
@@ -242,5 +298,7 @@ module.exports = {
     getFollowing,
     getFollowStats,
     updateUserDetails,
-    getUserDetails
+    getUserDetails,
+    updateUserProfilePhoto,
+    deleteUserProfilePhoto
 };
