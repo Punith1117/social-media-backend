@@ -1,18 +1,24 @@
-# Social Media Backend API
+# Social Media Backend API | Node.js Express REST API
 
-A RESTful API for social media applications built with Node.js, Express, PostgreSQL, and Prisma. This API provides user authentication functionality with JWT tokens.
+A scalable RESTful API for social media applications built with Node.js, Express, PostgreSQL, and Prisma. Features JWT authentication, user profiles, file uploads, and social networking functionality. This project serves as the backend for a full-stack social media clone developed as the final capstone project for The Odin Project's curriculum.
 
-## Project Overview
+## 🚀 Features
 
-This backend API serves as the foundation for a social media application, providing secure user authentication and a scalable architecture for future features.
+- **Secure Authentication** with JWT tokens and bcrypt password hashing
+- **User Profiles** with customizable details and profile photos
+- **Social Networking** with follow/unfollow system
+- **File Uploads** via Cloudinary integration
+- **RESTful Design** following best practices
+- **Database Management** with Prisma ORM
 
-## Tech Stack
+## 🛠 Tech Stack
 
-- **Backend**: Node.js with Express.js
+- **Backend**: Node.js, Express.js
 - **Database**: PostgreSQL with Prisma ORM
-- **Authentication**: JWT (JSON Web Tokens)
-- **Security**: bcrypt for password hashing
-- **Development**: Prisma Studio for database management
+- **Authentication**: JWT + Passport.js
+- **File Storage**: Cloudinary + Multer
+- **Security**: bcrypt, CORS, input validation
+- **Development**: Prisma Studio, hot reload
 
 ## Installation
 
@@ -58,113 +64,97 @@ DATABASE_URL="postgresql://username:password@localhost:5432/social_media_db?sche
 
 # JWT Configuration
 JWT_SECRET=your-super-secret-jwt-key-change-this-in-production
+
+# Cloudinary Configuration
+CLOUDINARY_CLOUD_NAME=your-cloud-name
+CLOUDINARY_API_KEY=your-api-key
+CLOUDINARY_API_SECRET=your-api-secret
 ```
 
-- **PORT**: Server port number (default: 3000)
+**Required Variables:**
+- **PORT**: Server port (default: 3000)
 - **DATABASE_URL**: PostgreSQL connection string
-- **JWT_SECRET**: Secret key for JWT token signing (use a strong, random string in production)
+- **JWT_SECRET**: Secret key for JWT tokens (use strong string in production)
+- **CLOUDINARY_CLOUD_NAME**: Get from Cloudinary dashboard
+- **CLOUDINARY_API_KEY**: Get from Cloudinary dashboard  
+- **CLOUDINARY_API_SECRET**: Get from Cloudinary dashboard
 
-## API Endpoints
+## 📡 API Endpoints
 
 ### Base URL
 ```
 http://localhost:3000
 ```
 
-### Authentication
-Include Bearer token in Authorization header:
+### Authentication Header
 ```
 Authorization: Bearer <your-jwt-token>
 ```
 
-### Endpoints
+### 🔐 Auth Routes
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/auth/signup` | User registration |
+| POST | `/auth/login` | User login |
 
-#### User Registration
-**POST** `/auth/signup`
+### 👤 User Routes
+| Method | Endpoint | Auth Required | Description |
+|--------|----------|---------------|-------------|
+| GET | `/users/me` | Yes | Get current user profile |
+| PUT | `/users/me` | Yes | Update user profile |
+| POST | `/users/me/photo` | Yes | Upload profile photo |
+| DELETE | `/users/me/photo` | Yes | Delete profile photo |
+| GET | `/users/:username` | No | Get public user profile |
 
-**Request Body:**
-```json
-{
-  "username": "john_doe",
-  "password": "Password123"
-}
-```
+### 🤝 Follow Routes
+| Method | Endpoint | Auth Required | Description |
+|--------|----------|---------------|-------------|
+| POST | `/follow/:followingId` | Yes | Follow a user |
+| DELETE | `/follow/:followingId` | Yes | Unfollow a user |
+| GET | `/follow/followers/:userId` | No | Get followers list |
+| GET | `/follow/following/:userId` | No | Get following list |
+| GET | `/follow/stats/:userId` | No | Get follow statistics |
 
-**Response (201 Created):**
-```json
-{
-  "message": "User created successfully",
-  "user": {
-    "id": 1,
-    "username": "john_doe",
-    "createdAt": "2024-01-01T00:00:00.000Z"
-  }
-}
-```
+### 🏥 Health Check
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/health` | Server status check |
 
-#### User Login
-**POST** `/auth/login`
+## 🔐 Authentication Flow
 
-**Request Body:**
-```json
-{
-  "username": "john_doe",
-  "password": "Password123"
-}
-```
+1. Register via `POST /auth/signup`
+2. Login via `POST /auth/login` to get JWT token
+3. Include token in Authorization header for protected routes
+4. Token expires after 10 minutes - re-login required
 
-**Response (200 OK):**
-```json
-{
-  "message": "Login successful",
-  "user": {
-    "id": 1,
-    "username": "john_doe",
-    "createdAt": "2024-01-01T00:00:00.000Z"
-  },
-  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
-}
-```
+## ❌ Error Handling
 
-**Validation Rules:**
-- Username: 3-20 characters, alphanumeric and underscores only
-- Password: Minimum 5 characters, must contain uppercase, lowercase, and number
-
-## Authentication Flow
-
-1. User registers via `/auth/signup`
-2. User logs in via `/auth/login` with credentials
-3. Server validates credentials and returns JWT token
-4. Token expires after 10 minutes
-5. User must login again to get new token
-
-## Error Format
-
-All error responses follow this structure:
-
+All errors follow this format:
 ```json
 {
   "error": "Error message description",
-  "field": "field_name" // Optional, for validation errors
+  "field": "field_name" // Optional for validation errors
 }
 ```
 
 **Common Status Codes:**
-- **400**: Invalid input data
-- **401**: Invalid credentials or token
-- **409**: Resource already exists
-- **500**: Server error
+- `400` - Invalid input data
+- `401` - Invalid credentials/token
+- `409` - Resource already exists
+- `500` - Server error
 
-## Project Structure
+## 📁 Project Structure
 
 ```
 social-media-backend/
-├── controllers/           # Route handlers
-├── middleware/           # Custom middleware
-├── prisma/              # Database configuration
-├── routes/              # API routes
-├── .env.example         # Environment variables template
-├── databaseQueries.js   # Database operations
-├── server.js           # Server entry point
-└── utils.js            # Utility functions
+├── config/              # Cloudinary configuration
+├── controllers/         # Route handlers
+├── middleware/          # Custom middleware (auth, upload)
+├── prisma/             # Database schema and migrations
+├── routes/             # API routes
+├── .env.example        # Environment variables template
+├── databaseQueries.js  # Database operations
+├── server.js          # Server entry point
+└── utils.js           # Utility functions
 ```
+
