@@ -23,8 +23,22 @@ model User {
 
   followers  Follow[] @relation("UserFollowers")
   following  Follow[] @relation("UserFollowing")
+  posts      Post[]
 
   @@map("users")
+}
+
+model Post {
+  id        Int      @id @default(autoincrement())
+  content   String   @db.Text
+  authorId  Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  author    User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  @@index([authorId, createdAt])
+  @@map("posts")
 }
 
 model Follow {
