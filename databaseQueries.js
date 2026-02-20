@@ -286,6 +286,90 @@ const deleteUserProfilePhoto = async (userId) => {
     }
 };
 
+// ===== POST QUERIES =====
+
+const createPost = async (authorId, content) => {
+    const post = await prisma.post.create({
+        data: {
+            authorId,
+            content
+        }
+    });
+    return post;
+};
+
+const getPostById = async (postId) => {
+    const post = await prisma.post.findUnique({
+        where: { id: postId },
+        include: {
+            author: {
+                select: {
+                    id: true,
+                    username: true
+                }
+            }
+        }
+    });
+    return post;
+};
+
+const getPostsByUser = async (userId, page = 1, limit = 10) => {
+    const skip = (page - 1) * limit;
+    const posts = await prisma.post.findMany({
+        where: { authorId: userId },
+        orderBy: { createdAt: 'desc' },
+        skip,
+        take: limit
+    });
+    return posts;
+};
+
+const countPostsByUser = async (userId) => {
+    const count = await prisma.post.count({
+        where: { authorId: userId }
+    });
+    return count;
+};
+
+const updatePost = async (postId, authorId, content) => {
+    const post = await prisma.post.updateMany({
+        where: {
+            id: postId,
+            authorId: authorId
+        },
+        data: {
+            content
+        }
+    });
+    
+    if (post.count === 0) {
+        return null;
+    }
+    
+    return await prisma.post.findUnique({
+        where: { id: postId }
+    });
+};
+
+const deletePost = async (postId, authorId) => {
+    const post = await prisma.post.findFirst({
+        where: {
+            id: postId,
+            authorId: authorId
+        }
+    });
+    
+    if (!post) {
+        return null;
+    }
+    
+    await prisma.post.delete({
+        where: { id: postId }
+    });
+    
+    return post.id;
+};
+
 
 module.exports = {
     getUserForAuth,
@@ -300,5 +384,11 @@ module.exports = {
     updateUserDetails,
     getUserDetails,
     updateUserProfilePhoto,
-    deleteUserProfilePhoto
+    deleteUserProfilePhoto,
+    createPost,
+    getPostById,
+    getPostsByUser,
+    countPostsByUser,
+    updatePost,
+    deletePost
 };
