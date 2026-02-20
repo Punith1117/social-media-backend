@@ -1,16 +1,19 @@
 const { getUserDetails, getUserDetailsById, updateUserDetails, updateUserProfilePhoto, deleteUserProfilePhoto } = require('../databaseQueries');
-const { formatErrorResponse, validateUserDetailsUpdate, sanitizeInput, validateInputType } = require('../utils');
+const { formatErrorResponse, normalizeUsername, validateUserDetailsUpdate, sanitizeInput, validateInputType } = require('../utils');
 const cloudinary = require('../config/cloudinary');
 
 const getUserDetailsByUsername = async (req, res) => {
     try {
         const { username } = req.params;
+        
+        // Normalize username at API boundary
+        const normalizedUsername = normalizeUsername(username);
 
         if (!username) {
             return res.status(400).json(formatErrorResponse('Username is required', 'username'));
         }
 
-        const user = await getUserDetails(username);
+        const user = await getUserDetails(normalizedUsername);
         if (!user) {
             return res.status(404).json(formatErrorResponse('User not found', 'username'));
         }

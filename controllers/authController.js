@@ -1,11 +1,14 @@
 const { getUserForAuth, createUser } = require('../databaseQueries');
-const { generateToken, hashPassword, comparePassword, validateUsername, validatePassword, formatErrorResponse } = require('../utils');
+const { generateToken, hashPassword, comparePassword, normalizeUsername, validateUsername, validatePassword, formatErrorResponse } = require('../utils');
 
 const signup = async (req, res) => {
     try {
         const { username, password } = req.body;
+        
+        // Normalize username at API boundary
+        const normalizedUsername = normalizeUsername(username);
 
-        const usernameValidation = validateUsername(username);
+        const usernameValidation = validateUsername(normalizedUsername);
         if (!usernameValidation.valid) {
             return res.status(400).json(formatErrorResponse(usernameValidation.message, 'username'));
         }
@@ -15,13 +18,13 @@ const signup = async (req, res) => {
             return res.status(400).json(formatErrorResponse(passwordValidation.message, 'password'));
         }
 
-        const existingUser = await getUserForAuth(username);
+        const existingUser = await getUserForAuth(normalizedUsername);
         if (existingUser) {
             return res.status(409).json(formatErrorResponse('Username already exists', 'username'));
         }
 
         const hashedPassword = await hashPassword(password);
-        const newUser = await createUser(username, hashedPassword);
+        const newUser = await createUser(normalizedUsername, hashedPassword);
 
         res.status(201).json({
             message: 'User created successfully',
@@ -46,6 +49,9 @@ const signup = async (req, res) => {
 const login = async (req, res) => {
     try {
         const { username, password } = req.body;
+        
+        // Normalize username at API boundary
+        const normalizedUsername = normalizeUsername(username);
 
         if (!username) {
             return res.status(400).json(formatErrorResponse('Username is required', 'username'));
@@ -54,7 +60,7 @@ const login = async (req, res) => {
             return res.status(400).json(formatErrorResponse('Password is required', 'password'));
         }
 
-        const user = await getUserForAuth(username);
+        const user = await getUserForAuth(normalizedUsername);
         if (!user) {
             return res.status(401).json(formatErrorResponse('Invalid username or password', 'password'));
         }

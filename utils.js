@@ -25,15 +25,17 @@ const comparePassword = async (password, hashedPassword) => {
     return await bcrypt.compare(password, hashedPassword);
 };
 
+const normalizeUsername = (username) => username.toLowerCase();
+
 const validateUsername = (username) => {
-    const usernameRegex = /^[a-zA-Z0-9_]{3,20}$/;
+    const usernameRegex = /^[a-z0-9_]{3,20}$/;
     if (!username) {
         return { valid: false, message: 'Username is required' };
     }
     if (!usernameRegex.test(username)) {
         return { 
             valid: false, 
-            message: 'Username must be 3-20 characters long and contain only letters, numbers, and underscores' 
+            message: 'Username must be 3-20 characters long and contain only lowercase letters, numbers, and underscores' 
         };
     }
     return { valid: true };
@@ -175,6 +177,7 @@ module.exports = {
     verifyToken,
     hashPassword,
     comparePassword,
+    normalizeUsername,
     validateUsername,
     validatePassword,
     formatErrorResponse,
