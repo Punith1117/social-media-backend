@@ -19,6 +19,9 @@ app.use('/follow', followRoutes);
 const userDetailsRoutes = require('./routes/userDetails');
 app.use('/users', userDetailsRoutes);
 
+const postRoutes = require('./routes/postRoutes');
+app.use('/posts', postRoutes);
+
 app.get('/health', (req, res) => {
     res.status(200).json({ status: 'ok' });
 });
