@@ -61,7 +61,17 @@ const getPostByIdController = async (req, res) => {
             return res.status(404).json(formatErrorResponse('Post not found', 'id'));
         }
 
-        res.status(200).json(post);
+        const responsePost = {
+            id: post.id,
+            content: post.content,
+            authorId: post.authorId,
+            createdAt: post.createdAt,
+            updatedAt: post.updatedAt,
+            author: post.author,
+            likesCount: post._count.likes
+        };
+
+        res.status(200).json({ post: responsePost });
     } catch (error) {
         console.error('Error getting post by ID:', error);
         if (error.message.includes('Database error')) {
@@ -102,8 +112,18 @@ const getPostsByUserController = async (req, res) => {
             countPostsByUser(user.id)
         ]);
 
+        // Transform posts to include likesCount
+        const transformedPosts = posts.map(post => ({
+            id: post.id,
+            content: post.content,
+            authorId: post.authorId,
+            createdAt: post.createdAt,
+            updatedAt: post.updatedAt,
+            likesCount: post._count.likes
+        }));
+
         res.status(200).json({
-            posts,
+            posts: transformedPosts,
             pagination: {
                 page: pageNum,
                 limit: limitNum,
@@ -138,8 +158,18 @@ const getOwnPostsController = async (req, res) => {
             countPostsByUser(userId)
         ]);
 
+        // Transform posts to include likesCount
+        const transformedPosts = posts.map(post => ({
+            id: post.id,
+            content: post.content,
+            authorId: post.authorId,
+            createdAt: post.createdAt,
+            updatedAt: post.updatedAt,
+            likesCount: post._count.likes
+        }));
+
         res.status(200).json({
-            posts,
+            posts: transformedPosts,
             pagination: {
                 page: pageNum,
                 limit: limitNum,

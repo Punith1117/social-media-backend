@@ -307,6 +307,11 @@ const getPostById = async (postId) => {
                     id: true,
                     username: true
                 }
+            },
+            _count: {
+                select: {
+                    likes: true
+                }
             }
         }
     });
@@ -319,7 +324,14 @@ const getPostsByUser = async (userId, page = 1, limit = 10) => {
         where: { authorId: userId },
         orderBy: { createdAt: 'desc' },
         skip,
-        take: limit
+        take: limit,
+        include: {
+            _count: {
+                select: {
+                    likes: true
+                }
+            }
+        }
     });
     return posts;
 };
