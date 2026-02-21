@@ -370,6 +370,64 @@ const deletePost = async (postId, authorId) => {
     return post.id;
 };
 
+// ===== LIKE QUERIES =====
+
+const createLike = async (userId, postId) => {
+    try {
+        const like = await prisma.like.create({
+            data: {
+                userId,
+                postId
+            }
+        });
+        return like;
+    } catch (error) {
+        console.error('Error creating like:', error);
+        throw new Error('Database error while creating like');
+    }
+};
+
+const deleteLike = async (userId, postId) => {
+    try {
+        const like = await prisma.like.findFirst({
+            where: {
+                userId,
+                postId
+            }
+        });
+        
+        if (!like) {
+            return null;
+        }
+        
+        await prisma.like.delete({
+            where: { id: like.id }
+        });
+        
+        return like.id;
+    } catch (error) {
+        console.error('Error deleting like:', error);
+        throw new Error('Database error while deleting like');
+    }
+};
+
+const getLikeByUserAndPost = async (userId, postId) => {
+    try {
+        const like = await prisma.like.findUnique({
+            where: {
+                userId_postId: {
+                    userId,
+                    postId
+                }
+            }
+        });
+        return like;
+    } catch (error) {
+        console.error('Error finding like by user and post:', error);
+        throw new Error('Database error while finding like');
+    }
+};
+
 
 module.exports = {
     getUserForAuth,
@@ -390,5 +448,8 @@ module.exports = {
     getPostsByUser,
     countPostsByUser,
     updatePost,
-    deletePost
+    deletePost,
+    createLike,
+    deleteLike,
+    getLikeByUserAndPost
 };
