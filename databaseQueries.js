@@ -382,6 +382,22 @@ const deletePost = async (postId, authorId) => {
     return post.id;
 };
 
+const getLikesByUserForPosts = async (userId, postIds) => {
+    try {
+        const likes = await prisma.like.findMany({
+            where: {
+                userId: userId,
+                postId: { in: postIds }
+            },
+            select: { postId: true }
+        });
+        return new Set(likes.map(like => like.postId));
+    } catch (error) {
+        console.error('Error getting likes by user for posts:', error);
+        throw new Error('Database error while getting user likes');
+    }
+};
+
 // ===== LIKE QUERIES =====
 
 const createLike = async (userId, postId) => {
@@ -463,5 +479,6 @@ module.exports = {
     deletePost,
     createLike,
     deleteLike,
-    getLikeByUserAndPost
+    getLikeByUserAndPost,
+    getLikesByUserForPosts
 };

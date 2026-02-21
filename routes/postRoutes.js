@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { authenticate } = require('../middleware/auth');
+const { authenticate, optionalAuth } = require('../middleware/auth');
 const {
     createPostController,
     getPostByIdController,
@@ -15,8 +15,8 @@ const {
 // POST /posts - Create new post (requires auth)
 router.post('/', authenticate, createPostController);
 
-// GET /posts/:id - Get post by ID (public)
-router.get('/:id', getPostByIdController);
+// GET /posts/:id - Get post by ID (public, with optional auth for like status)
+router.get('/:id', optionalAuth, getPostByIdController);
 
 // PUT /posts/:id - Update post (requires auth)
 router.put('/:id', authenticate, updatePostController);

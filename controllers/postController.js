@@ -5,7 +5,8 @@ const {
     countPostsByUser,
     updatePost,
     deletePost,
-    getUserDetails
+    getUserDetails,
+    getLikesByUserForPosts
 } = require('../databaseQueries');
 const { formatErrorResponse, normalizeUsername } = require('../utils');
 
@@ -61,6 +62,13 @@ const getPostByIdController = async (req, res) => {
             return res.status(404).json(formatErrorResponse('Post not found', 'id'));
         }
 
+        // Get like status for authenticated users
+        let isLikedByCurrentUser = false;
+        if (req.user) {
+            const likedPostIds = await getLikesByUserForPosts(req.user.id, [post.id]);
+            isLikedByCurrentUser = likedPostIds.has(post.id);
+        }
+
         const responsePost = {
             id: post.id,
             content: post.content,
@@ -68,7 +76,8 @@ const getPostByIdController = async (req, res) => {
             createdAt: post.createdAt,
             updatedAt: post.updatedAt,
             author: post.author,
-            likesCount: post._count.likes
+            likesCount: post._count.likes,
+            isLikedByCurrentUser
         };
 
         res.status(200).json({ post: responsePost });
@@ -112,14 +121,16 @@ const getPostsByUserController = async (req, res) => {
             countPostsByUser(user.id)
         ]);
 
-        // Transform posts to include likesCount
+        // Transform posts to include likesCount and isLikedByCurrentUser
+        const likedPostIds = req.user ? await getLikesByUserForPosts(req.user.id, posts.map(post => post.id)) : new Set();
         const transformedPosts = posts.map(post => ({
             id: post.id,
             content: post.content,
             authorId: post.authorId,
             createdAt: post.createdAt,
             updatedAt: post.updatedAt,
-            likesCount: post._count.likes
+            likesCount: post._count.likes,
+            isLikedByCurrentUser: likedPostIds.has(post.id)
         }));
 
         res.status(200).json({
@@ -158,14 +169,16 @@ const getOwnPostsController = async (req, res) => {
             countPostsByUser(userId)
         ]);
 
-        // Transform posts to include likesCount
+        // Transform posts to include likesCount and isLikedByCurrentUser
+        const likedPostIds = req.user ? await getLikesByUserForPosts(req.user.id, posts.map(post => post.id)) : new Set();
         const transformedPosts = posts.map(post => ({
             id: post.id,
             content: post.content,
             authorId: post.authorId,
             createdAt: post.createdAt,
             updatedAt: post.updatedAt,
-            likesCount: post._count.likes
+            likesCount: post._count.likes,
+            isLikedByCurrentUser: likedPostIds.has(post.id)
         }));
 
         res.status(200).json({

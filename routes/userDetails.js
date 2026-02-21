@@ -1,7 +1,7 @@
 const express = require('express');
 const { getUserDetails, getOwnUserDetails, updateUserDetails, uploadProfilePhoto, deleteProfilePhoto } = require('../controllers/userDetailsController');
 const { getPostsByUserController, getOwnPostsController } = require('../controllers/postController');
-const { authenticate } = require('../middleware/auth');
+const { authenticate, optionalAuth } = require('../middleware/auth');
 const { upload, handleUploadError } = require('../middleware/upload');
 
 const router = express.Router();
@@ -15,8 +15,8 @@ router.get('/me/posts', authenticate, getOwnPostsController);
 router.post('/me/photo', authenticate, upload.single('photo'), handleUploadError, uploadProfilePhoto);
 router.delete('/me/photo', authenticate, deleteProfilePhoto);
 
-// Posts by username endpoint - no authentication required
-router.get('/:username/posts', getPostsByUserController);
+// Posts by username endpoint - public with optional auth for like status
+router.get('/:username/posts', optionalAuth, getPostsByUserController);
 
 // Public endpoint - no authentication required
 router.get('/:username', getUserDetails);
