@@ -123,6 +123,8 @@ Authorization: Bearer <your-jwt-token>
 | GET | `/posts/:id` | No | Get post by ID |
 | PUT | `/posts/:id` | Yes | Update post (author only) |
 | DELETE | `/posts/:id` | Yes | Delete post (author only) |
+| POST | `/posts/:postId/like` | Yes | Like a post |
+| DELETE | `/posts/:postId/like` | Yes | Unlike a post |
 | GET | `/users/:username/posts` | No | Get posts by username (paginated) |
 | GET | `/users/me/posts` | Yes | Get current user's posts (paginated) |
 
@@ -153,8 +155,67 @@ Authorization: Bearer <your-jwt-token>
     "username": "johndoe",
     "displayName": "John Doe",
     "profilePhotoUrl": "https://example.com/photo.jpg"
-  }
+  },
+  "likesCount": 42,
+  "isLikedByCurrentUser": true
 }
+```
+
+### Like Endpoints
+
+#### Like a Post
+```http
+POST /posts/:postId/like
+Authorization: Bearer <jwt-token>
+```
+
+**Success Response (201):**
+```json
+{
+  "message": "Post liked successfully",
+  "likeId": 123
+}
+```
+
+**Error Responses:**
+```json
+// 409 - Already liked
+{ "error": "Post already liked", "field": "postId" }
+
+// 404 - Post not found
+{ "error": "Post not found", "field": "postId" }
+
+// 401 - Unauthorized
+{ "error": "Invalid or expired token" }
+
+// 400 - Invalid post ID
+{ "error": "Invalid post ID", "field": "postId" }
+```
+
+#### Unlike a Post
+```http
+DELETE /posts/:postId/like
+Authorization: Bearer <jwt-token>
+```
+
+**Success Response (200):**
+```json
+{
+  "message": "Post unliked successfully", 
+  "likeId": 123
+}
+```
+
+**Error Responses:**
+```json
+// 404 - Like not found
+{ "error": "Like not found", "field": "postId" }
+
+// 401 - Unauthorized
+{ "error": "Invalid or expired token" }
+
+// 400 - Invalid post ID
+{ "error": "Invalid post ID", "field": "postId" }
 ```
 
 ### Pagination
