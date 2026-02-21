@@ -7,6 +7,7 @@ A scalable RESTful API for social media applications built with Node.js, Express
 - **Secure Authentication** with JWT tokens and bcrypt password hashing
 - **User Profiles** with customizable details and profile photos
 - **Social Networking** with follow/unfollow system
+- **Posts System** with create, read, update, delete functionality and pagination
 - **File Uploads** via Cloudinary integration
 - **RESTful Design** following best practices
 - **Database Management** with Prisma ORM
@@ -115,6 +116,16 @@ Authorization: Bearer <your-jwt-token>
 | GET | `/follow/following/:userId` | No | Get following list |
 | GET | `/follow/stats/:userId` | No | Get follow statistics |
 
+### 📝 Post Routes
+| Method | Endpoint | Auth Required | Description |
+|--------|----------|---------------|-------------|
+| POST | `/posts` | Yes | Create a new post |
+| GET | `/posts/:id` | No | Get post by ID |
+| PUT | `/posts/:id` | Yes | Update post (author only) |
+| DELETE | `/posts/:id` | Yes | Delete post (author only) |
+| GET | `/users/:username/posts` | No | Get posts by username (paginated) |
+| GET | `/users/me/posts` | Yes | Get current user's posts (paginated) |
+
 ### 🏥 Health Check
 | Method | Endpoint | Description |
 |--------|----------|-------------|
@@ -126,6 +137,43 @@ Authorization: Bearer <your-jwt-token>
 2. Login via `POST /auth/login` to get JWT token
 3. Include token in Authorization header for protected routes
 4. Token expires after 10 minutes - re-login required
+
+## 📝 Post System
+
+### Post Data Model
+```json
+{
+  "id": 1,
+  "content": "This is the post content",
+  "authorId": 123,
+  "createdAt": "2024-01-01T00:00:00.000Z",
+  "updatedAt": "2024-01-01T00:00:00.000Z",
+  "author": {
+    "id": 123,
+    "username": "johndoe",
+    "displayName": "John Doe",
+    "profilePhotoUrl": "https://example.com/photo.jpg"
+  }
+}
+```
+
+### Pagination
+For paginated endpoints, use query parameters:
+- `page`: Page number (default: 1, min: 1)
+- `limit`: Items per page (default: 10, min: 1, max: 50)
+
+Response format:
+```json
+{
+  "posts": [...],
+  "pagination": {
+    "page": 1,
+    "limit": 10,
+    "total": 25,
+    "totalPages": 3
+  }
+}
+```
 
 ## ❌ Error Handling
 
@@ -148,13 +196,26 @@ All errors follow this format:
 ```
 social-media-backend/
 ├── config/              # Cloudinary configuration
-├── controllers/         # Route handlers
+├── controllers/         # Route handlers (auth, posts, users, follows)
 ├── middleware/          # Custom middleware (auth, upload)
-├── prisma/             # Database schema and migrations
-├── routes/             # API routes
+├── prisma/             # Database schema, migrations, and client
+├── routes/             # API routes (auth, posts, users, follows)
 ├── .env.example        # Environment variables template
+├── .gitignore          # Git ignore patterns
 ├── databaseQueries.js  # Database operations
+├── package.json        # Dependencies and scripts
+├── prisma.config.ts    # Prisma configuration
 ├── server.js          # Server entry point
-└── utils.js           # Utility functions
+├── utils.js           # Utility functions
+└── README.md          # This file
 ```
+
+## 🗄 Database Schema
+
+The application uses PostgreSQL with the following main models:
+- **User**: User profiles with authentication and details
+- **Post**: Social media posts with content and timestamps
+- **Follow**: Many-to-many relationship for following system
+
+All models include proper indexing, cascading deletes, and constraints for data integrity.
 
