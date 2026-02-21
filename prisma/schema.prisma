@@ -24,6 +24,7 @@ model User {
   followers  Follow[] @relation("UserFollowers")
   following  Follow[] @relation("UserFollowing")
   posts      Post[]
+  likes      Like[]
 
   @@map("users")
 }
@@ -36,6 +37,7 @@ model Post {
   updatedAt DateTime @updatedAt
 
   author    User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  likes     Like[]
 
   @@index([authorId, createdAt])
   @@map("posts")
@@ -54,4 +56,19 @@ model Follow {
   @@index([followingId])
   @@index([followerId])
   @@map("follows")
+}
+
+model Like {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  postId    Int
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  post Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, postId]) // Prevent duplicate likes
+  @@index([postId])
+  @@index([userId])
+  @@map("likes")
 }
