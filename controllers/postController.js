@@ -10,6 +10,9 @@ const {
 } = require('../databaseQueries');
 const { formatErrorResponse, normalizeUsername } = require('../utils');
 
+// Constants for validation
+const MAX_POST_LENGTH = 300;
+
 // Shared pagination validation function
 const validatePagination = (page, limit) => {
     const pageNum = parseInt(page);
@@ -27,13 +30,26 @@ const validatePagination = (page, limit) => {
     return { valid: true, pageNum, limitNum };
 };
 
+// Shared post content validation function
+const validatePostContent = (content) => {
+    if (!content || content.trim().length === 0) {
+        return { valid: false, error: 'Content is required' };
+    }
+    if (content.length > MAX_POST_LENGTH) {
+        return { valid: false, error: `Content must be ${MAX_POST_LENGTH} characters or less` };
+    }
+    return { valid: true };
+};
+
 const createPostController = async (req, res) => {
     try {
         const { content } = req.body;
         const authorId = req.user.id;
 
-        if (!content || content.trim().length === 0) {
-            return res.status(400).json(formatErrorResponse('Content is required', 'content'));
+        // Validate post content using shared function
+        const contentValidation = validatePostContent(content);
+        if (!contentValidation.valid) {
+            return res.status(400).json(formatErrorResponse(contentValidation.error, 'content'));
         }
 
         const post = await createPost(authorId, content.trim());
@@ -211,8 +227,10 @@ const updatePostController = async (req, res) => {
             return res.status(400).json(formatErrorResponse('Invalid post ID', 'id'));
         }
 
-        if (!content || content.trim().length === 0) {
-            return res.status(400).json(formatErrorResponse('Content is required', 'content'));
+        // Validate post content using shared function
+        const contentValidation = validatePostContent(content);
+        if (!contentValidation.valid) {
+            return res.status(400).json(formatErrorResponse(contentValidation.error, 'content'));
         }
 
         const updatedPost = await updatePost(postIdNum, authorId, content.trim());
