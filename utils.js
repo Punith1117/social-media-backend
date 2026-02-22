@@ -172,6 +172,37 @@ const validateInputType = (value, fieldName) => {
     return { valid: true };
 };
 
+// Constants for validation
+const MAX_POST_LENGTH = 300;
+const MAX_PAGINATION_LIMIT = 50;
+
+// Shared pagination validation function
+const validatePagination = (page, limit) => {
+    const pageNum = parseInt(page);
+    const limitNum = parseInt(limit);
+
+    if (isNaN(pageNum) || pageNum < 1) {
+        return { valid: false, error: formatErrorResponse('Invalid page number', 'page') };
+    }
+
+    if (isNaN(limitNum) || limitNum < 1 || limitNum > MAX_PAGINATION_LIMIT) {
+        return { valid: false, error: formatErrorResponse(`Invalid limit (must be between 1 and ${MAX_PAGINATION_LIMIT})`, 'limit') };
+    }
+
+    return { valid: true, pageNum, limitNum };
+};
+
+// Shared post content validation function
+const validatePostContent = (content) => {
+    if (!content || content.trim().length === 0) {
+        return { valid: false, error: 'Content is required' };
+    }
+    if (content.length > MAX_POST_LENGTH) {
+        return { valid: false, error: `Content must be ${MAX_POST_LENGTH} characters or less` };
+    }
+    return { valid: true };
+};
+
 module.exports = {
     generateToken,
     verifyToken,
@@ -185,5 +216,9 @@ module.exports = {
     validateBio,
     validateUserDetailsUpdate,
     sanitizeInput,
-    validateInputType
+    validateInputType,
+    MAX_POST_LENGTH,
+    MAX_PAGINATION_LIMIT,
+    validatePagination,
+    validatePostContent
 };

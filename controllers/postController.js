@@ -8,38 +8,7 @@ const {
     getUserDetails,
     getLikesByUserForPosts
 } = require('../databaseQueries');
-const { formatErrorResponse, normalizeUsername } = require('../utils');
-
-// Constants for validation
-const MAX_POST_LENGTH = 300;
-
-// Shared pagination validation function
-const validatePagination = (page, limit) => {
-    const pageNum = parseInt(page);
-    const limitNum = parseInt(limit);
-    const MAX_LIMIT = 50;
-
-    if (isNaN(pageNum) || pageNum < 1) {
-        return { valid: false, error: formatErrorResponse('Invalid page number', 'page') };
-    }
-
-    if (isNaN(limitNum) || limitNum < 1 || limitNum > MAX_LIMIT) {
-        return { valid: false, error: formatErrorResponse(`Invalid limit (must be between 1 and ${MAX_LIMIT})`, 'limit') };
-    }
-
-    return { valid: true, pageNum, limitNum };
-};
-
-// Shared post content validation function
-const validatePostContent = (content) => {
-    if (!content || content.trim().length === 0) {
-        return { valid: false, error: 'Content is required' };
-    }
-    if (content.length > MAX_POST_LENGTH) {
-        return { valid: false, error: `Content must be ${MAX_POST_LENGTH} characters or less` };
-    }
-    return { valid: true };
-};
+const { formatErrorResponse, normalizeUsername, validatePagination, validatePostContent } = require('../utils');
 
 const createPostController = async (req, res) => {
     try {
