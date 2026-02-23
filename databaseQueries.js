@@ -109,7 +109,8 @@ const getFollowers = async (userId) => {
                     select: {
                         id: true,
                         username: true,
-                        createdAt: true
+                        displayName: true,
+                        profilePhotoUrl: true
                     }
                 }
             }
@@ -130,7 +131,8 @@ const getFollowing = async (userId) => {
                     select: {
                         id: true,
                         username: true,
-                        createdAt: true
+                        displayName: true,
+                        profilePhotoUrl: true
                     }
                 }
             }
