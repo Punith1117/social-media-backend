@@ -25,6 +25,7 @@ model User {
   following  Follow[] @relation("UserFollowing")
   posts      Post[]
   likes      Like[]
+  comments   Comment[]
 
   @@map("users")
 }
@@ -38,6 +39,7 @@ model Post {
 
   author    User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
   likes     Like[]
+  comments  Comment[]
 
   @@index([authorId, createdAt])
   @@map("posts")
@@ -71,4 +73,19 @@ model Like {
   @@index([postId])
   @@index([userId])
   @@map("likes")
+}
+
+model Comment {
+  id        Int      @id @default(autoincrement())
+  content   String   @db.Text
+  postId    Int
+  authorId  Int
+  createdAt DateTime @default(now())
+
+  author User @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  post   Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@index([postId, createdAt])
+  @@index([authorId])
+  @@map("comments")
 }
