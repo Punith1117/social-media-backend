@@ -8,6 +8,7 @@ A scalable RESTful API for social media applications built with Node.js, Express
 - **User Profiles** with customizable details and profile photos
 - **Social Networking** with follow/unfollow system
 - **Posts System** with create, read, update, delete functionality and pagination
+- **Comments System** with create, read, delete functionality and pagination
 - **File Uploads** via Cloudinary integration
 - **RESTful Design** following best practices
 - **Database Management** with Prisma ORM
@@ -128,6 +129,13 @@ Authorization: Bearer <your-jwt-token>
 | GET | `/users/:username/posts` | No | Get posts by username (paginated) |
 | GET | `/users/me/posts` | Yes | Get current user's posts (paginated) |
 
+### 💬 Comment Routes
+| Method | Endpoint | Auth Required | Description |
+|--------|----------|---------------|-------------|
+| POST | `/posts/:postId/comments` | Yes | Create comment on post |
+| GET | `/posts/:postId/comments` | No | Get comments for post (paginated) |
+| DELETE | `/comments/:commentId` | Yes | Delete comment (author only) |
+
 ### 🏥 Health Check
 | Method | Endpoint | Description |
 |--------|----------|-------------|
@@ -139,6 +147,90 @@ Authorization: Bearer <your-jwt-token>
 2. Login via `POST /auth/login` to get JWT token
 3. Include token in Authorization header for protected routes
 4. Token expires after 10 minutes - re-login required
+
+## 📝 Comment System
+
+### Comment Data Model
+```json
+{
+  "id": 1,
+  "content": "This is a comment",
+  "postId": 123,
+  "authorId": 456,
+  "createdAt": "2024-01-01T00:00:00.000Z",
+  "author": {
+    "id": 456,
+    "username": "johndoe",
+    "displayName": "John Doe"
+  }
+}
+```
+
+### Create Comment
+```http
+POST /posts/:postId/comments
+Authorization: Bearer <jwt-token>
+Content-Type: application/json
+
+{
+  "content": "This is a great post!"
+}
+```
+
+**Success Response (201):**
+```json
+{
+  "id": 789,
+  "content": "This is a great post!",
+  "postId": 123,
+  "authorId": 456,
+  "createdAt": "2024-01-01T00:00:00.000Z",
+  "author": {
+    "id": 456,
+    "username": "johndoe",
+    "displayName": "John Doe"
+  }
+}
+```
+
+### Get Comments
+```http
+GET /posts/:postId/comments?page=1&limit=10
+```
+
+**Success Response (200):**
+```json
+{
+  "comments": [...],
+  "pagination": {
+    "page": 1,
+    "limit": 10,
+    "total": 25,
+    "totalPages": 3
+  }
+}
+```
+
+### Delete Comment
+```http
+DELETE /comments/:commentId
+Authorization: Bearer <jwt-token>
+```
+
+**Success Response (200):**
+```json
+{
+  "message": "Comment deleted successfully",
+  "deletedCommentId": 789
+}
+```
+
+**Comment Rules:**
+- Comments limited to 100 characters
+- Newest comments appear first
+- Only comment authors can delete their comments
+- Public read access to comments
+- Pagination supported
 
 ## 📝 Post System
 
@@ -273,10 +365,11 @@ social-media-backend/
 
 ## 🗄 Database Schema
 
-The application uses PostgreSQL with the following main models:
+The application uses PostgreSQL with following main models:
 - **User**: User profiles with authentication and details
 - **Post**: Social media posts with content and timestamps
 - **Follow**: Many-to-many relationship for following system
+- **Comment**: User comments on posts with author information
+- **Like**: User likes on posts and comments
 
 All models include proper indexing, cascading deletes, and constraints for data integrity.
-
