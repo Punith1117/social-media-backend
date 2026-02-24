@@ -523,6 +523,32 @@ const countCommentsByPost = async (postId) => {
     }
 };
 
+const deleteComment = async (commentId, authorId) => {
+    try {
+        // First find the comment to verify ownership
+        const comment = await prisma.comment.findFirst({
+            where: {
+                id: commentId,
+                authorId: authorId
+            }
+        });
+
+        if (!comment) {
+            return null;
+        }
+
+        // Delete the comment
+        await prisma.comment.delete({
+            where: { id: commentId }
+        });
+
+        return comment.id;
+    } catch (error) {
+        console.error('Error deleting comment:', error);
+        throw new Error('Database error while deleting comment');
+    }
+};
+
 module.exports = {
     getUserForAuth,
     getUserDetailsById,
@@ -549,5 +575,6 @@ module.exports = {
     getLikesByUserForPosts,
     createComment,
     getCommentsByPost,
-    countCommentsByPost
+    countCommentsByPost,
+    deleteComment
 };

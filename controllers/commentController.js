@@ -1,4 +1,4 @@
-const { createComment, getPostById, getCommentsByPost, countCommentsByPost } = require('../databaseQueries');
+const { createComment, getPostById, getCommentsByPost, countCommentsByPost, deleteComment } = require('../databaseQueries');
 const { formatErrorResponse, validatePagination } = require('../utils');
 
 const createCommentController = async (req, res) => {
@@ -87,7 +87,38 @@ const getCommentsByPostController = async (req, res) => {
     }
 };
 
+const deleteCommentController = async (req, res) => {
+    try {
+        const { commentId } = req.params;
+        const authorId = req.user.id;
+
+        // Validate commentId exists
+        if (!commentId) {
+            return res.status(400).json(formatErrorResponse('Comment ID is required', 'commentId'));
+        }
+
+        // Delete comment (authorization handled in database function)
+        const deletedCommentId = await deleteComment(parseInt(commentId), authorId);
+
+        if (!deletedCommentId) {
+            return res.status(404).json(formatErrorResponse('Comment not found', 'commentId'));
+        }
+
+        res.status(200).json({
+            message: 'Comment deleted successfully',
+            deletedCommentId
+        });
+    } catch (error) {
+        console.error('Error deleting comment:', error);
+        if (error.message.includes('Database error')) {
+            return res.status(500).json(formatErrorResponse('Database operation failed'));
+        }
+        res.status(500).json(formatErrorResponse('Internal server error'));
+    }
+};
+
 module.exports = {
     createCommentController,
-    getCommentsByPostController
+    getCommentsByPostController,
+    deleteCommentController
 };
