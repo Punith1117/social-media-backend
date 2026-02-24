@@ -58,4 +58,40 @@ describe('Comments API', () => {
       expect(response.status).toBe(404);
     });
   });
+
+  describe('GET /posts/:postId/comments', () => {
+    it('should get comments for existing post', async () => {
+      // Arrange: Create test user, post, and comments
+      const { user, authHeader } = await createTestUser();
+      const post = await createTestPost(user.id);
+      const app = createTestApp();
+      
+      // Create some comments
+      await request(app)
+        .post(`/posts/${post.id}/comments`)
+        .set('Authorization', authHeader)
+        .send({ content: 'First comment' });
+      
+      await request(app)
+        .post(`/posts/${post.id}/comments`)
+        .set('Authorization', authHeader)
+        .send({ content: 'Second comment' });
+      
+      // Act: Get comments
+      const response = await request(app)
+        .get(`/posts/${post.id}/comments`);
+      
+      // Assert: Should succeed
+      expect(response.status).toBe(200);
+      expect(response.body).toHaveProperty('comments');
+      expect(response.body).toHaveProperty('pagination');
+      expect(response.body.comments).toHaveLength(2);
+      expect(response.body.comments[0]).toHaveProperty('content');
+      expect(response.body.comments[0]).toHaveProperty('author');
+      expect(response.body.pagination).toHaveProperty('page');
+      expect(response.body.pagination).toHaveProperty('limit');
+      expect(response.body.pagination).toHaveProperty('total');
+      expect(response.body.pagination).toHaveProperty('totalPages');
+    });
+  });
 });
