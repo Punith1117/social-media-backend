@@ -486,6 +486,43 @@ const createComment = async (postId, authorId, content) => {
     }
 };
 
+const getCommentsByPost = async (postId, page = 1, limit = 10) => {
+    try {
+        const skip = (page - 1) * limit;
+        const comments = await prisma.comment.findMany({
+            where: { postId },
+            orderBy: { createdAt: 'desc' },
+            skip,
+            take: limit,
+            include: {
+                author: {
+                    select: {
+                        id: true,
+                        username: true,
+                        displayName: true
+                    }
+                }
+            }
+        });
+        return comments;
+    } catch (error) {
+        console.error('Error getting comments by post:', error);
+        throw new Error('Database error while getting comments');
+    }
+};
+
+const countCommentsByPost = async (postId) => {
+    try {
+        const count = await prisma.comment.count({
+            where: { postId }
+        });
+        return count;
+    } catch (error) {
+        console.error('Error counting comments by post:', error);
+        throw new Error('Database error while counting comments');
+    }
+};
+
 module.exports = {
     getUserForAuth,
     getUserDetailsById,
@@ -510,5 +547,7 @@ module.exports = {
     deleteLike,
     getLikeByUserAndPost,
     getLikesByUserForPosts,
-    createComment
+    createComment,
+    getCommentsByPost,
+    countCommentsByPost
 };
