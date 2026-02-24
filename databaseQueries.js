@@ -456,8 +456,35 @@ const getLikeByUserAndPost = async (userId, postId) => {
         console.error('Error finding like by user and post:', error);
         throw new Error('Database error while finding like');
     }
+    return like;
 };
 
+// ===== COMMENT QUERIES =====
+
+const createComment = async (postId, authorId, content) => {
+    try {
+        const comment = await prisma.comment.create({
+            data: {
+                postId,
+                authorId,
+                content
+            },
+            include: {
+                author: {
+                    select: {
+                        id: true,
+                        username: true,
+                        displayName: true
+                    }
+                }
+            }
+        });
+        return comment;
+    } catch (error) {
+        console.error('Error creating comment:', error);
+        throw new Error('Database error while creating comment');
+    }
+};
 
 module.exports = {
     getUserForAuth,
@@ -482,5 +509,6 @@ module.exports = {
     createLike,
     deleteLike,
     getLikeByUserAndPost,
-    getLikesByUserForPosts
+    getLikesByUserForPosts,
+    createComment
 };
