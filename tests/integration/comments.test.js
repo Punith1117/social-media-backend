@@ -94,4 +94,69 @@ describe('Comments API', () => {
       expect(response.body.pagination).toHaveProperty('totalPages');
     });
   });
+
+  describe('DELETE /comments/:commentId', () => {
+    it('should delete comment when author', async () => {
+      // Arrange: Create test user, post, and comment
+      const { user, authHeader } = await createTestUser();
+      const post = await createTestPost(user.id);
+      const app = createTestApp();
+      
+      const createResponse = await request(app)
+        .post(`/posts/${post.id}/comments`)
+        .set('Authorization', authHeader)
+        .send({ content: 'Comment to delete' });
+      
+      const commentId = createResponse.body.id;
+      
+      // Act: Delete comment
+      const deleteResponse = await request(app)
+        .delete(`/comments/${commentId}`)
+        .set('Authorization', authHeader);
+      
+      // Assert: Should succeed
+      expect(deleteResponse.status).toBe(200);
+      expect(deleteResponse.body).toHaveProperty('message', 'Comment deleted successfully');
+      expect(deleteResponse.body).toHaveProperty('deletedCommentId', commentId);
+    });
+
+    it('should return 404 when trying to delete non-existent comment', async () => {
+      // Arrange: Create test user
+      const { authHeader } = await createTestUser();
+      const app = createTestApp();
+      
+      // Act: Try to delete non-existent comment
+      const response = await request(app)
+        .delete('/comments/99999')
+        .set('Authorization', authHeader);
+      
+      // Assert: Should fail
+      expect(response.status).toBe(404);
+      expect(response.body).toHaveProperty('error', 'Comment not found');
+    });
+
+    it('should return 403 when trying to delete other user\'s comment', async () => {
+      // Arrange: Create two users, post, and comment by first user
+      const user1 = await createTestUser();
+      const user2 = await createTestUser();
+      const post = await createTestPost(user1.user.id);
+      const app = createTestApp();
+      
+      const createResponse = await request(app)
+        .post(`/posts/${post.id}/comments`)
+        .set('Authorization', user1.authHeader)
+        .send({ content: 'User 1 comment' });
+      
+      const commentId = createResponse.body.id;
+      
+      // Act: Try to delete with second user
+      const response = await request(app)
+        .delete(`/comments/${commentId}`)
+        .set('Authorization', user2.authHeader);
+      
+      // Assert: Should fail
+      expect(response.status).toBe(403);
+      expect(response.body).toHaveProperty('error', 'Not authorized to delete this comment');
+    });
+  });
 });
