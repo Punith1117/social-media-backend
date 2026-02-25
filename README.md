@@ -344,6 +344,41 @@ All errors follow this format:
 - `409` - Resource already exists
 - `500` - Server error
 
+## 🧪 Testing & TDD
+
+### Test-Driven Development Approach
+
+Implemented TDD for the comments system using Red-Green-Refactor cycle with Jest and Supertest.
+
+### Test Structure
+```
+tests/
+├── integration/comments.test.js    # API integration tests
+├── helpers/                        # Test utilities
+├── envSetup.js                     # Test environment
+└── setup.js                        # Test cleanup
+```
+
+### Test Coverage
+
+**Comment Creation**: Authentication, validation, error handling
+**Comment Retrieval**: Pagination, response structure, author data
+**Comment Deletion**: Authorization, permissions, edge cases
+
+### Test Utilities
+
+- **Auth Helpers**: JWT token generation for test users
+- **Database Helpers**: Test data creation and management
+
+### Running Tests
+```bash
+npm test              # Run all tests
+npm run test:watch    # Watch mode
+npm run test:coverage # Coverage report
+```
+
+The comments feature demonstrates comprehensive testing with Jest and Supertest, covering API endpoints, authentication/authorization, error handling, input validation, pagination, and database operations for robust, production-ready functionality.
+
 ## 📁 Project Structure
 
 ```
@@ -353,9 +388,15 @@ social-media-backend/
 ├── middleware/          # Custom middleware (auth, upload)
 ├── prisma/             # Database schema, migrations, and client
 ├── routes/             # API routes (auth, posts, users, follows)
+├── tests/              # Test suite and TDD implementation
+│   ├── integration/    # Integration tests
+│   ├── helpers/        # Test utilities and helpers
+│   ├── envSetup.js     # Test environment configuration
+│   └── setup.js        # Test cleanup and teardown
 ├── .env.example        # Environment variables template
 ├── .gitignore          # Git ignore patterns
 ├── databaseQueries.js  # Database operations
+├── jest.config.js      # Jest testing configuration
 ├── package.json        # Dependencies and scripts
 ├── prisma.config.ts    # Prisma configuration
 ├── server.js          # Server entry point
