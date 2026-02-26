@@ -203,6 +203,41 @@ const validatePostContent = (content) => {
     return { valid: true };
 };
 
+const validateSearchQuery = (query) => {
+    if (!query) {
+        return { valid: false, message: 'Search query is required', field: 'q' };
+    }
+    
+    // Trim whitespace
+    const trimmedQuery = query.trim();
+    
+    if (!trimmedQuery) {
+        return { valid: false, message: 'Search query cannot be empty', field: 'q' };
+    }
+    
+    // Use existing validateUsername method for core validation
+    // This ensures search queries match username format constraints (3-20 chars, a-z0-9_)
+    const usernameValidation = validateUsername(trimmedQuery);
+    if (!usernameValidation.valid) {
+        return { 
+            valid: false, 
+            message: usernameValidation.message, 
+            field: 'q' 
+        };
+    }
+    
+    // XSS detection (reuse existing security pattern)
+    if (containsXSSPatterns(trimmedQuery)) {
+        return { 
+            valid: false, 
+            message: 'Search query contains potentially unsafe content', 
+            field: 'q' 
+        };
+    }
+    
+    return { valid: true, sanitizedQuery: trimmedQuery.toLowerCase() };
+};
+
 module.exports = {
     generateToken,
     verifyToken,
@@ -220,5 +255,6 @@ module.exports = {
     MAX_POST_LENGTH,
     MAX_PAGINATION_LIMIT,
     validatePagination,
-    validatePostContent
+    validatePostContent,
+    validateSearchQuery
 };
