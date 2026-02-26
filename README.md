@@ -6,6 +6,7 @@ A scalable RESTful API for social media applications built with Node.js, Express
 
 - **Secure Authentication** with JWT tokens and bcrypt password hashing
 - **User Profiles** with customizable details and profile photos
+- **User Search** with partial, case-insensitive username matching
 - **Social Networking** with follow/unfollow system
 - **Posts System** with create, read, update, delete functionality and pagination
 - **Comments System** with create, read, delete functionality and pagination
@@ -102,6 +103,7 @@ Authorization: Bearer <your-jwt-token>
 ### 👤 User Routes
 | Method | Endpoint | Auth Required | Description |
 |--------|----------|---------------|-------------|
+| GET | `/users/` | No | Search users by username |
 | GET | `/users/me` | Yes | Get current user profile |
 | PUT | `/users/me` | Yes | Update user profile |
 | POST | `/users/me/photo` | Yes | Upload profile photo |
@@ -135,6 +137,137 @@ Authorization: Bearer <your-jwt-token>
 | POST | `/posts/:postId/comments` | Yes | Create comment on post |
 | GET | `/posts/:postId/comments` | No | Get comments for post (paginated) |
 | DELETE | `/comments/:commentId` | Yes | Delete comment (author only) |
+
+## 🔍 User Search System
+
+### Search Endpoint
+```http
+GET /users/?q=search_query
+```
+
+**Description**: Search for users by username with partial, case-insensitive matching.
+
+**Parameters:**
+- `q` (query parameter): Search query string
+  - **Required**: Yes
+  - **Minimum length**: 3 characters
+  - **Maximum length**: 20 characters  
+  - **Allowed characters**: lowercase letters, numbers, underscores
+  - **Format**: Matches username validation patterns
+
+**Search Behavior:**
+- **Partial matching**: Searches anywhere within username
+- **Case-insensitive**: `john` matches `JohnDoe`, `johnsmith`, etc.
+- **Alphabetical sorting**: Results sorted by username A-Z
+
+**Response Format:**
+```json
+{
+  "users": [
+    {
+      "id": 1,
+      "username": "johndoe",
+      "displayName": "John Doe",
+      "profilePhotoUrl": "https://example.com/photo.jpg"
+    },
+    {
+      "id": 2,
+      "username": "johnsmith",
+      "displayName": "John Smith", 
+      "profilePhotoUrl": null
+    }
+  ]
+}
+```
+
+**Example Requests:**
+
+**Search for users containing "john":**
+```http
+GET /users/?q=john
+```
+
+**Search for users containing "dev":**
+```http
+GET /users/?q=dev
+```
+
+**Success Response (200):**
+```json
+{
+  "users": [
+    {
+      "id": 1,
+      "username": "developer123",
+      "displayName": "Developer",
+      "profilePhotoUrl": "https://example.com/dev.jpg"
+    },
+    {
+      "id": 2,
+      "username": "dev_user",
+      "displayName": "Dev User",
+      "profilePhotoUrl": null
+    }
+  ]
+}
+```
+
+**Empty Results (200):**
+```json
+{
+  "users": []
+}
+```
+
+**Error Responses:**
+
+**Missing query parameter (400):**
+```json
+{
+  "error": "Search query is required",
+  "field": "q"
+}
+```
+
+**Query too short (400):**
+```http
+GET /users/?q=ab
+```
+```json
+{
+  "error": "Username must be 3-20 characters long and contain only lowercase letters, numbers, and underscores",
+  "field": "q"
+}
+```
+
+**Invalid characters (400):**
+```http
+GET /users/?q=John@
+```
+```json
+{
+  "error": "Username must be 3-20 characters long and contain only lowercase letters, numbers, and underscores",
+  "field": "q"
+}
+```
+
+**Database error (500):**
+```json
+{
+  "error": "Database operation failed"
+}
+```
+
+**Search Examples:**
+- `q=john` → Matches: `johndoe`, `johnsmith`, `myjohn`, `john123`
+- `q=dev` → Matches: `developer`, `dev_user`, `code_dev`, `devmaster`
+- `q=123` → Matches: `user123`, `test123`, `admin123`
+- `q=_` → Matches: `user_name`, `test_user`, `admin_account`
+
+**Performance Notes:**
+- Username field is indexed for fast lookups
+- Results limited to essential user data fields
+- Case-insensitive search optimized for performance
 
 ### 🏥 Health Check
 | Method | Endpoint | Description |
