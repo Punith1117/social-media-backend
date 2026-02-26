@@ -549,6 +549,32 @@ const deleteComment = async (commentId, authorId) => {
     }
 };
 
+const searchUsersByUsername = async (query) => {
+    try {
+        const users = await prisma.user.findMany({
+            where: {
+                username: {
+                    contains: query,
+                    mode: 'insensitive'
+                }
+            },
+            select: {
+                id: true,
+                username: true,
+                displayName: true,
+                profilePhotoUrl: true
+            },
+            orderBy: {
+                username: 'asc'
+            }
+        });
+        return users;
+    } catch (error) {
+        console.error('Error searching users by username:', error);
+        throw new Error('Database error while searching users');
+    }
+};
+
 module.exports = {
     getUserForAuth,
     getUserDetailsById,
@@ -576,5 +602,6 @@ module.exports = {
     createComment,
     getCommentsByPost,
     countCommentsByPost,
-    deleteComment
+    deleteComment,
+    searchUsersByUsername
 };
