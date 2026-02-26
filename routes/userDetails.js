@@ -1,10 +1,13 @@
 const express = require('express');
-const { getUserDetails, getOwnUserDetails, updateUserDetails, uploadProfilePhoto, deleteProfilePhoto } = require('../controllers/userDetailsController');
+const { getUserDetails, getOwnUserDetails, updateUserDetails, uploadProfilePhoto, deleteProfilePhoto, searchUsers } = require('../controllers/userDetailsController');
 const { getPostsByUserController, getOwnPostsController } = require('../controllers/postController');
 const { authenticate, optionalAuth } = require('../middleware/auth');
 const { upload, handleUploadError } = require('../middleware/upload');
 
 const router = express.Router();
+
+// Search endpoint - no authentication required
+router.get('/', searchUsers);
 
 // Authenticated endpoints - require authentication
 router.get('/me', authenticate, getOwnUserDetails);

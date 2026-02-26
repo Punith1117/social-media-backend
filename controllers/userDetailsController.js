@@ -1,5 +1,5 @@
-const { getUserDetails, getUserDetailsById, updateUserDetails, updateUserProfilePhoto, deleteUserProfilePhoto } = require('../databaseQueries');
-const { formatErrorResponse, normalizeUsername, validateUserDetailsUpdate, sanitizeInput, validateInputType } = require('../utils');
+const { getUserDetails, getUserDetailsById, updateUserDetails, updateUserProfilePhoto, deleteUserProfilePhoto, searchUsersByUsername } = require('../databaseQueries');
+const { formatErrorResponse, normalizeUsername, validateUserDetailsUpdate, sanitizeInput, validateInputType, validateSearchQuery } = require('../utils');
 const cloudinary = require('../config/cloudinary');
 
 const getUserDetailsByUsername = async (req, res) => {
@@ -172,10 +172,38 @@ const deleteProfilePhoto = async (req, res) => {
     }
 };
 
+const searchUsersController = async (req, res) => {
+    try {
+        const { q } = req.query;
+        
+        // Validate search query
+        const validation = validateSearchQuery(q);
+        if (!validation.valid) {
+            return res.status(400).json(formatErrorResponse(validation.message, validation.field));
+        }
+        
+        // Use sanitized query from validation
+        const sanitizedQuery = validation.sanitizedQuery;
+        
+        // Search users
+        const users = await searchUsersByUsername(sanitizedQuery);
+        
+        // Return response
+        res.status(200).json({ users });
+    } catch (error) {
+        console.error('Search users error:', error);
+        if (error.message.includes('Database error')) {
+            return res.status(500).json(formatErrorResponse('Database operation failed'));
+        }
+        res.status(500).json(formatErrorResponse('Internal server error'));
+    }
+};
+
 module.exports = {
     getUserDetails: getUserDetailsByUsername,
     getOwnUserDetails,
     updateUserDetails: updateUserDetailsController,
     uploadProfilePhoto,
-    deleteProfilePhoto
+    deleteProfilePhoto,
+    searchUsers: searchUsersController
 };
