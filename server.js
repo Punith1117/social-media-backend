@@ -25,6 +25,9 @@ app.use('/posts', postRoutes);
 const commentRoutes = require('./routes/commentRoutes');
 app.use('/', commentRoutes); // Root since routes include full paths
 
+const feedRoutes = require('./routes/feedRoutes');
+app.use('/feed', feedRoutes);
+
 app.get('/health', (req, res) => {
     res.status(200).json({ status: 'ok' });
 });
