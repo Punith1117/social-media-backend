@@ -238,6 +238,56 @@ const validateSearchQuery = (query) => {
     return { valid: true, sanitizedQuery: trimmedQuery.toLowerCase() };
 };
 
+// Cursor utilities for pagination
+const encodeCursor = (cursorObj) => {
+    return Buffer.from(JSON.stringify(cursorObj)).toString("base64");
+};
+
+const decodeCursor = (cursor) => {
+    try {
+        const parsed = JSON.parse(Buffer.from(cursor, "base64").toString());
+        return {
+            id: parsed.id,
+            createdAt: new Date(parsed.createdAt)
+        };
+    } catch (error) {
+        throw new Error('Invalid cursor format');
+    }
+};
+
+const validateCursor = (cursor) => {
+    if (!cursor) {
+        return { valid: true }; // No cursor is valid for first page
+    }
+    
+    if (typeof cursor !== 'string') {
+        return { valid: false, error: formatErrorResponse('Cursor must be a string', 'cursor') };
+    }
+    
+    try {
+        const decoded = decodeCursor(cursor);
+        
+        // Validate cursor structure
+        if (!decoded.id || !decoded.createdAt) {
+            return { valid: false, error: formatErrorResponse('Invalid cursor structure', 'cursor') };
+        }
+        
+        // Validate id is a number
+        if (typeof decoded.id !== 'number' || decoded.id <= 0) {
+            return { valid: false, error: formatErrorResponse('Invalid cursor id', 'cursor') };
+        }
+        
+        // Validate createdAt is a valid Date
+        if (!(decoded.createdAt instanceof Date) || isNaN(decoded.createdAt.getTime())) {
+            return { valid: false, error: formatErrorResponse('Invalid cursor date', 'cursor') };
+        }
+        
+        return { valid: true, decodedCursor: decoded };
+    } catch (error) {
+        return { valid: false, error: formatErrorResponse('Invalid or malformed cursor', 'cursor') };
+    }
+};
+
 module.exports = {
     generateToken,
     verifyToken,
@@ -256,5 +306,8 @@ module.exports = {
     MAX_PAGINATION_LIMIT,
     validatePagination,
     validatePostContent,
-    validateSearchQuery
+    validateSearchQuery,
+    encodeCursor,
+    decodeCursor,
+    validateCursor
 };
