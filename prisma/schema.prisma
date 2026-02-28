@@ -41,7 +41,7 @@ model Post {
   likes     Like[]
   comments  Comment[]
 
-  @@index([authorId, createdAt])
+  @@index([authorId, createdAt, id])
   @@map("posts")
 }
 
