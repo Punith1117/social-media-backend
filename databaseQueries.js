@@ -631,6 +631,49 @@ const getFeedPosts = async (userId, cursor, limit) => {
     }
 };
 
+const getExplorePosts = async (cursor, limit) => {
+    try {
+        const posts = await prisma.post.findMany({
+            where: {
+                ...(cursor && {
+                    OR: [
+                        { createdAt: { lt: cursor.createdAt } },
+                        {
+                            createdAt: cursor.createdAt,
+                            id: { lt: cursor.id }
+                        }
+                    ]
+                })
+            },
+            include: {
+                author: {
+                    select: {
+                        id: true,
+                        username: true,
+                        displayName: true,
+                        profilePhotoUrl: true
+                    }
+                },
+                _count: {
+                    select: {
+                        likes: true,
+                        comments: true
+                    }
+                }
+            },
+            orderBy: [
+                { createdAt: 'desc' },
+                { id: 'desc' }
+            ],
+            take: limit + 1 // Fetch one extra to determine if there are more posts
+        });
+        return posts;
+    } catch (error) {
+        console.error('Error getting explore posts:', error);
+        throw new Error('Database error while getting explore posts');
+    }
+};
+
 module.exports = {
     getUserForAuth,
     getUserDetailsById,
@@ -660,5 +703,6 @@ module.exports = {
     countCommentsByPost,
     deleteComment,
     searchUsersByUsername,
-    getFeedPosts
+    getFeedPosts,
+    getExplorePosts
 };
