@@ -580,7 +580,9 @@ const getFeedPosts = async (userId, cursor, limit) => {
         const posts = await prisma.post.findMany({
             where: {
                 author: {
-                    followers: {
+                    // followingRelations = records where author is being followed
+                    // We check if current user (userId) is following the author
+                    followingRelations: {
                         some: {
                             followerId: userId
                         }
