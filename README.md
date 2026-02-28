@@ -138,6 +138,12 @@ Authorization: Bearer <your-jwt-token>
 | GET | `/posts/:postId/comments` | No | Get comments for post (paginated) |
 | DELETE | `/comments/:commentId` | Yes | Delete comment (author only) |
 
+### 📰 Feed Routes
+| Method | Endpoint | Auth Required | Description |
+|--------|----------|---------------|-------------|
+| GET | `/feed/home` | Yes | Get home feed (posts from followed users) |
+| GET | `/feed/explore` | No | Get explore feed (all posts, public) |
+
 ## 🔍 User Search System
 
 ### Search Endpoint
@@ -547,3 +553,193 @@ The application uses PostgreSQL with following main models:
 - **Like**: User likes on posts and comments
 
 All models include proper indexing, cascading deletes, and constraints for data integrity.
+
+## 📰 Feed System
+
+The feed system provides two endpoints for consuming social media content with cursor-based pagination for optimal performance.
+
+### Feed Data Model
+```json
+{
+  "posts": [
+    {
+      "id": 1,
+      "content": "This is a post",
+      "authorId": 123,
+      "createdAt": "2024-01-01T00:00:00.000Z",
+      "updatedAt": "2024-01-01T00:00:00.000Z",
+      "author": {
+        "id": 123,
+        "username": "johndoe",
+        "displayName": "John Doe",
+        "profilePhotoUrl": "https://example.com/photo.jpg"
+      },
+      "likesCount": 42,
+      "commentsCount": 8,
+      "isLikedByCurrentUser": true
+    }
+  ],
+  "nextCursor": "eyJpZCI6MTIzLCJjcmVhdGVkQXQiOiIyMDI0LTAxLTAxVDAwOjAwOjAwLjAwMFoifQ==",
+  "hasMore": true
+}
+```
+
+### Cursor Pagination
+
+Both feed endpoints use cursor-based pagination for optimal performance:
+
+**Query Parameters:**
+- `cursor` (optional): Base64-encoded cursor string for pagination
+- `limit` (optional): Number of posts to return (default: 10, max: 50)
+
+**Cursor Format:**
+The cursor is a base64-encoded JSON object containing:
+```json
+{
+  "id": 123,
+  "createdAt": "2024-01-01T00:00:00.000Z"
+}
+```
+
+**Pagination Flow:**
+1. **First Request**: No cursor required
+2. **Subsequent Requests**: Use `nextCursor` from previous response
+3. **End of Feed**: `hasMore` will be `false` and `nextCursor` will be `null`
+
+### 🏠 Home Feed
+
+**Endpoint:** `GET /feed/home`
+
+**Description:** Returns posts from users that the authenticated user follows. Requires authentication.
+
+**Request:**
+```http
+GET /feed/home?limit=10
+Authorization: Bearer <jwt-token>
+```
+
+**Response:**
+```json
+{
+  "posts": [
+    {
+      "id": 1,
+      "content": "Great weather today!",
+      "authorId": 456,
+      "createdAt": "2024-01-01T12:00:00.000Z",
+      "updatedAt": "2024-01-01T12:00:00.000Z",
+      "author": {
+        "id": 456,
+        "username": "jane_doe",
+        "displayName": "Jane Doe",
+        "profilePhotoUrl": "https://example.com/jane.jpg"
+      },
+      "likesCount": 15,
+      "commentsCount": 3,
+      "isLikedByCurrentUser": true
+    }
+  ],
+  "nextCursor": "eyJpZCI6MSwiY3JlYXRlZEF0IjoiMjAyNC0wMS0wMVQxMjowMDowMC4wMDBaIn0=",
+  "hasMore": true
+}
+```
+
+**Features:**
+- **Authentication Required**: Only authenticated users can access
+- **Followed Users Only**: Shows posts from users you follow
+- **Like Status**: Always includes `isLikedByCurrentUser` (true/false)
+- **Performance**: Optimized with database indexes and batch queries
+
+**Error Responses:**
+```json
+// 401 - Not authenticated
+{ "error": "Invalid or expired token" }
+
+// 400 - Invalid limit
+{ "error": "Invalid limit (must be between 1 and 50)", "field": "limit" }
+
+// 400 - Invalid cursor
+{ "error": "Invalid or malformed cursor", "field": "cursor" }
+```
+
+### 🔍 Explore Feed
+
+**Endpoint:** `GET /feed/explore`
+
+**Description:** Returns all posts ordered by most recent. Public endpoint with optional authentication.
+
+**Request (Unauthenticated):**
+```http
+GET /feed/explore?limit=10
+```
+
+**Request (Authenticated):**
+```http
+GET /feed/explore?limit=10
+Authorization: Bearer <jwt-token>
+```
+
+**Response:**
+```json
+{
+  "posts": [
+    {
+      "id": 2,
+      "content": "Hello world!",
+      "authorId": 789,
+      "createdAt": "2024-01-01T13:00:00.000Z",
+      "updatedAt": "2024-01-01T13:00:00.000Z",
+      "author": {
+        "id": 789,
+        "username": "bob_smith",
+        "displayName": "Bob Smith",
+        "profilePhotoUrl": null
+      },
+      "likesCount": 8,
+      "commentsCount": 1,
+      "isLikedByCurrentUser": false
+    }
+  ],
+  "nextCursor": "eyJpZCI6MiwiY3JlYXRlZEF0IjoiMjAyNC0wMS0wMVQxMzowMDowMC4wMDBaIn0=",
+  "hasMore": true
+}
+```
+
+**Features:**
+- **Public Access**: No authentication required
+- **All Posts**: Shows posts from all users
+- **Optional Auth**: Like status only available for authenticated users
+- **Like Status**: 
+  - Authenticated: `isLikedByCurrentUser` = true/false
+  - Unauthenticated: `isLikedByCurrentUser` = false
+- **Performance**: Optimized with dedicated database index
+
+### 🔄 Pagination Examples
+
+**First Request:**
+```http
+GET /feed/explore?limit=5
+```
+
+**Response:**
+```json
+{
+  "posts": [...],
+  "nextCursor": "eyJpZCI6NSwiY3JlYXRlZEF0IjoiMjAyNC0wMS0wMVQxNDowMDowMC4wMDBaIn0=",
+  "hasMore": true
+}
+```
+
+**Next Request:**
+```http
+GET /feed/explore?limit=5&cursor=eyJpZCI6NSwiY3JlYXRlZEF0IjoiMjAyNC0wMS0wMVQxNDowMDowMC4wMDBaIn0=
+```
+
+**Final Page:**
+```json
+{
+  "posts": [...],
+  "nextCursor": null,
+  "hasMore": false
+}
+```
