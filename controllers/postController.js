@@ -6,9 +6,10 @@ const {
     updatePost,
     deletePost,
     getUserDetails,
-    getLikesByUserForPosts
+    getLikesByUserForPosts,
+    getFeedPosts
 } = require('../databaseQueries');
-const { formatErrorResponse, normalizeUsername, validatePagination, validatePostContent } = require('../utils');
+const { formatErrorResponse, normalizeUsername, validatePagination, validatePostContent, encodeCursor, validateCursor } = require('../utils');
 
 const createPostController = async (req, res) => {
     try {
@@ -245,11 +246,72 @@ const deletePostController = async (req, res) => {
     }
 };
 
+const getHomeFeedController = async (req, res) => {
+    try {
+        const userId = req.user.id;
+        const { cursor, limit = 10 } = req.query;
+
+        // Validate limit
+        const limitNum = parseInt(limit);
+        if (isNaN(limitNum) || limitNum < 1 || limitNum > 50) {
+            return res.status(400).json(formatErrorResponse('Invalid limit (must be between 1 and 50)', 'limit'));
+        }
+
+        // Validate cursor
+        const cursorValidation = validateCursor(cursor);
+        if (!cursorValidation.valid) {
+            return res.status(400).json(cursorValidation.error);
+        }
+
+        const decodedCursor = cursorValidation.decodedCursor;
+
+        // Get posts from database
+        const posts = await getFeedPosts(userId, decodedCursor, limitNum);
+
+        // Determine if there are more posts
+        const hasMore = posts.length > limitNum;
+        const displayPosts = hasMore ? posts.slice(0, -1) : posts;
+
+        // Transform posts to match response format
+        const transformedPosts = displayPosts.map(post => ({
+            id: post.id,
+            content: post.content,
+            authorId: post.authorId,
+            createdAt: post.createdAt,
+            updatedAt: post.updatedAt,
+            author: post.author,
+            likesCount: post._count.likes,
+            commentsCount: post._count.comments,
+            isLikedByCurrentUser: post.likes.length > 0
+        }));
+
+        // Generate next cursor if there are more posts
+        let nextCursor = null;
+        if (hasMore && displayPosts.length > 0) {
+            const lastPost = displayPosts[displayPosts.length - 1];
+            nextCursor = encodeCursor({ id: lastPost.id, createdAt: lastPost.createdAt });
+        }
+
+        res.status(200).json({
+            posts: transformedPosts,
+            nextCursor,
+            hasMore
+        });
+    } catch (error) {
+        console.error('Error getting home feed:', error);
+        if (error.message.includes('Database error')) {
+            return res.status(500).json(formatErrorResponse('Database operation failed'));
+        }
+        res.status(500).json(formatErrorResponse('Internal server error'));
+    }
+};
+
 module.exports = {
     createPostController,
     getPostByIdController,
     getPostsByUserController,
     getOwnPostsController,
     updatePostController,
-    deletePostController
+    deletePostController,
+    getHomeFeedController
 };
