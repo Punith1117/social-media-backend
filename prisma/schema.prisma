@@ -21,8 +21,8 @@ model User {
   profilePhotoUrl String?  // Optional profile photo URL
   createdAt       DateTime @default(now())
 
-  followers  Follow[] @relation("UserFollowers")
-  following  Follow[] @relation("UserFollowing")
+  followerRelations  Follow[] @relation("UserFollowers")
+  followingRelations Follow[] @relation("UserFollowing")
   posts      Post[]
   likes      Like[]
   comments   Comment[]
