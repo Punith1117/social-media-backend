@@ -7,7 +7,8 @@ const {
     deletePost,
     getUserDetails,
     getLikesByUserForPosts,
-    getFeedPosts
+    getFeedPosts,
+    getExplorePosts
 } = require('../databaseQueries');
 const { formatErrorResponse, normalizeUsername, validatePagination, validatePostContent, encodeCursor, validateCursor } = require('../utils');
 
@@ -306,6 +307,73 @@ const getHomeFeedController = async (req, res) => {
     }
 };
 
+const getExploreController = async (req, res) => {
+    try {
+        const userId = req.user?.id; // Optional auth
+        const { cursor, limit = 10 } = req.query;
+
+        // Validate limit
+        const limitNum = parseInt(limit);
+        if (isNaN(limitNum) || limitNum < 1 || limitNum > 50) {
+            return res.status(400).json(formatErrorResponse('Invalid limit (must be between 1 and 50)', 'limit'));
+        }
+
+        // Validate cursor
+        const cursorValidation = validateCursor(cursor);
+        if (!cursorValidation.valid) {
+            return res.status(400).json(cursorValidation.error);
+        }
+
+        const decodedCursor = cursorValidation.decodedCursor;
+
+        // Get posts without likes (optimized approach)
+        const posts = await getExplorePosts(decodedCursor, limitNum);
+
+        // Determine if there are more posts
+        const hasMore = posts.length > limitNum;
+        const displayPosts = hasMore ? posts.slice(0, -1) : posts;
+
+        // ✅ Optimized like status approach
+        let likedPostIds = new Set();
+        if (userId && displayPosts.length > 0) {
+            const postIds = displayPosts.map(post => post.id);
+            likedPostIds = await getLikesByUserForPosts(userId, postIds);
+        }
+
+        // Transform posts with O(1) like lookup
+        const transformedPosts = displayPosts.map(post => ({
+            id: post.id,
+            content: post.content,
+            authorId: post.authorId,
+            createdAt: post.createdAt,
+            updatedAt: post.updatedAt,
+            author: post.author,
+            likesCount: post._count.likes,
+            commentsCount: post._count.comments,
+            isLikedByCurrentUser: userId ? likedPostIds.has(post.id) : null
+        }));
+
+        // Generate next cursor if there are more posts
+        let nextCursor = null;
+        if (hasMore && displayPosts.length > 0) {
+            const lastPost = displayPosts[displayPosts.length - 1];
+            nextCursor = encodeCursor({ id: lastPost.id, createdAt: lastPost.createdAt });
+        }
+
+        res.status(200).json({
+            posts: transformedPosts,
+            nextCursor,
+            hasMore
+        });
+    } catch (error) {
+        console.error('Error getting explore posts:', error);
+        if (error.message.includes('Database error')) {
+            return res.status(500).json(formatErrorResponse('Database operation failed'));
+        }
+        res.status(500).json(formatErrorResponse('Internal server error'));
+    }
+};
+
 module.exports = {
     createPostController,
     getPostByIdController,
@@ -313,5 +381,6 @@ module.exports = {
     getOwnPostsController,
     updatePostController,
     deletePostController,
-    getHomeFeedController
+    getHomeFeedController,
+    getExploreController
 };
