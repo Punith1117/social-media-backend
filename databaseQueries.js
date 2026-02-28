@@ -575,6 +575,60 @@ const searchUsersByUsername = async (query) => {
     }
 };
 
+const getFeedPosts = async (userId, cursor, limit) => {
+    try {
+        const posts = await prisma.post.findMany({
+            where: {
+                author: {
+                    followers: {
+                        some: {
+                            followerId: userId
+                        }
+                    }
+                },
+                ...(cursor && {
+                    OR: [
+                        { createdAt: { lt: cursor.createdAt } },
+                        {
+                            createdAt: cursor.createdAt,
+                            id: { lt: cursor.id }
+                        }
+                    ]
+                })
+            },
+            include: {
+                author: {
+                    select: {
+                        id: true,
+                        username: true,
+                        displayName: true,
+                        profilePhotoUrl: true
+                    }
+                },
+                likes: {
+                    where: { userId },
+                    select: { id: true }
+                },
+                _count: {
+                    select: {
+                        likes: true,
+                        comments: true
+                    }
+                }
+            },
+            orderBy: [
+                { createdAt: 'desc' },
+                { id: 'desc' }
+            ],
+            take: limit + 1 // Fetch one extra to determine if there are more posts
+        });
+        return posts;
+    } catch (error) {
+        console.error('Error getting feed posts:', error);
+        throw new Error('Database error while getting feed posts');
+    }
+};
+
 module.exports = {
     getUserForAuth,
     getUserDetailsById,
@@ -603,5 +657,6 @@ module.exports = {
     getCommentsByPost,
     countCommentsByPost,
     deleteComment,
-    searchUsersByUsername
+    searchUsersByUsername,
+    getFeedPosts
 };
