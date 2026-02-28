@@ -350,7 +350,7 @@ const getExploreController = async (req, res) => {
             author: post.author,
             likesCount: post._count.likes,
             commentsCount: post._count.comments,
-            isLikedByCurrentUser: userId ? likedPostIds.has(post.id) : null
+            isLikedByCurrentUser: userId ? likedPostIds.has(post.id) : false
         }));
 
         // Generate next cursor if there are more posts
