@@ -10,7 +10,7 @@ A scalable RESTful API for social media applications built with Node.js, Express
 - **Social Networking** with follow/unfollow system
 - **Posts System** with create, read, update, delete functionality and pagination
 - **Comments System** with create, read, delete functionality and pagination
-- **Rate Limiting** for comments (5 per post per IP in 2 minutes)
+- **Rate Limiting** for comments (5 per post per IP in 2 minutes) and login attempts (3 per username in 2 minutes)
 - **File Uploads** via Cloudinary integration
 - **RESTful Design** following best practices
 - **Database Management** with Prisma ORM
