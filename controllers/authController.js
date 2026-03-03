@@ -77,6 +77,8 @@ const login = async (req, res) => {
             user: {
                 id: user.id,
                 username: user.username,
+                displayName: user.displayName,
+                profilePhotoUrl: user.profilePhotoUrl,
                 createdAt: user.createdAt
             },
             token
