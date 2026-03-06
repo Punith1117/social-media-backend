@@ -10,7 +10,7 @@ const {
     getFeedPosts,
     getExplorePosts
 } = require('../databaseQueries');
-const { formatErrorResponse, normalizeUsername, validatePagination, validatePostContent, encodeCursor, validateCursor } = require('../utils');
+const { formatErrorResponse, normalizeUsername, validatePagination, validatePostContent, encodeCursor, validateCursor, sanitizeNewlines } = require('../utils');
 
 const createPostController = async (req, res) => {
     try {
@@ -23,7 +23,7 @@ const createPostController = async (req, res) => {
             return res.status(400).json(formatErrorResponse(contentValidation.error, 'content'));
         }
 
-        const post = await createPost(authorId, content.trim());
+        const post = await createPost(authorId, sanitizeNewlines(content.trim()));
         res.status(201).json(post);
     } catch (error) {
         console.error('Error creating post:', error);
@@ -204,7 +204,7 @@ const updatePostController = async (req, res) => {
             return res.status(400).json(formatErrorResponse(contentValidation.error, 'content'));
         }
 
-        const updatedPost = await updatePost(postIdNum, authorId, content.trim());
+        const updatedPost = await updatePost(postIdNum, authorId, sanitizeNewlines(content.trim()));
 
         if (!updatedPost) {
             return res.status(404).json(formatErrorResponse('Post not found or unauthorized', 'id'));

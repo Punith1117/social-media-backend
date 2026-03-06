@@ -161,6 +161,14 @@ const sanitizeInput = (input) => {
     return validator.escape(validator.trim(input));
 };
 
+const sanitizeNewlines = (content) => {
+    if (typeof content !== 'string') {
+        return content;
+    }
+    // Replace 3 or more consecutive newlines with exactly 2 newlines
+    return content.replace(/\n{3,}/g, '\n\n');
+};
+
 const validateInputType = (value, fieldName) => {
     if (value !== undefined && value !== null && typeof value !== 'string') {
         return { 
@@ -301,6 +309,7 @@ module.exports = {
     validateBio,
     validateUserDetailsUpdate,
     sanitizeInput,
+    sanitizeNewlines,
     validateInputType,
     MAX_POST_LENGTH,
     MAX_PAGINATION_LIMIT,

@@ -1,5 +1,5 @@
 const { createComment, getPostById, getCommentsByPost, countCommentsByPost, deleteComment } = require('../databaseQueries');
-const { formatErrorResponse, validatePagination } = require('../utils');
+const { formatErrorResponse, validatePagination, sanitizeNewlines } = require('../utils');
 
 const createCommentController = async (req, res) => {
     try {
@@ -28,7 +28,7 @@ const createCommentController = async (req, res) => {
         }
 
         // Create comment
-        const comment = await createComment(parseInt(postId), authorId, content.trim());
+        const comment = await createComment(parseInt(postId), authorId, sanitizeNewlines(content.trim()));
         res.status(201).json(comment);
     } catch (error) {
         console.error('Error creating comment:', error);
