@@ -1,19 +1,34 @@
 # Social Media Backend API | Node.js Express REST API
 
-A scalable RESTful API for social media applications built with Node.js, Express, PostgreSQL, and Prisma. Features JWT authentication, user profiles, file uploads, and social networking functionality. This project serves as the backend for a full-stack social media clone developed as the final capstone project for The Odin Project's curriculum.
+A production-ready RESTful API for social media applications built with Node.js, Express, PostgreSQL, and Prisma. This capstone project demonstrates full-stack development capabilities with secure authentication, social features, and scalable architecture.
 
-## 🚀 Features
+## 🎯 Project Purpose
+
+Built as the final capstone project for The Odin Project's full-stack curriculum, this social media backend showcases the ability to design and implement complex, production-grade APIs that handle authentication, data relationships, file uploads, and performance optimization.
+
+## 💡 Key Learning Outcomes
+
+- **RESTful API Design**: Implemented proper HTTP methods, status codes, and error handling following industry best practices
+- **Authentication & Security**: JWT token-based authentication with bcrypt password hashing and rate limiting for security
+- **Database Architecture**: Designed PostgreSQL schema with proper indexing, relationships, and cascading deletes using Prisma ORM
+- **Test-Driven Development**: Comprehensive testing suite with Jest and Supertest, demonstrating TDD methodology
+- **Performance Optimization**: Implemented cursor-based pagination and database indexing for scalable data retrieval
+- **File Management**: Integrated Cloudinary for cloud-based file storage with Multer for upload handling
+- **Error Handling**: Consistent error response format with proper HTTP status codes and validation
+
+## 🚀 Core Features
 
 - **Secure Authentication** with JWT tokens and bcrypt password hashing
 - **User Profiles** with customizable details and profile photos
 - **User Search** with partial, case-insensitive username matching
 - **Social Networking** with follow/unfollow system
 - **Posts System** with create, read, update, delete functionality and pagination
-- **Comments System** with create, read, delete functionality and pagination
-- **Rate Limiting** for comments (5 per post per IP in 2 minutes) and login attempts (3 per username in 2 minutes)
-- **File Uploads** via Cloudinary integration
-- **RESTful Design** following best practices
-- **Database Management** with Prisma ORM
+- **Comments System** with create, read, delete functionality and rate limiting
+- **Like System** for posts with user-specific like status tracking
+- **Feed System** with home feed (followed users) and explore feed (all posts)
+- **File Uploads** via Cloudinary integration for profile photos
+- **Rate Limiting** for API abuse prevention
+- **RESTful Design** following industry best practices
 
 ## 🛠 Tech Stack
 
@@ -21,789 +36,119 @@ A scalable RESTful API for social media applications built with Node.js, Express
 - **Database**: PostgreSQL with Prisma ORM
 - **Authentication**: JWT + Passport.js
 - **File Storage**: Cloudinary + Multer
-- **Security**: bcrypt, CORS, input validation
+- **Security**: bcrypt, CORS, input validation, rate limiting
+- **Testing**: Jest, Supertest (TDD approach)
 - **Development**: Prisma Studio, hot reload
 
-## Installation
+## 🚀 Quick Start
 
-1. **Clone the repository**
+1. **Clone and install**
    ```bash
    git clone <repository-url>
    cd social-media-backend
-   ```
-
-2. **Install dependencies**
-   ```bash
    npm install
    ```
 
-3. **Set up environment variables**
+2. **Set up environment**
    ```bash
    cp .env.example .env
+   # Edit .env with your database and Cloudinary credentials
    ```
-   Then edit `.env` file with your configuration.
 
-4. **Set up the database**
+3. **Database setup**
    ```bash
    npm run db:generate
    npm run db:migrate
    ```
-   Database schema is defined in prisma/schema.prisma and managed via Prisma migrations.
 
-5. **Start the server**
+4. **Start development server**
    ```bash
    npm run dev
    ```
 
-## Environment Variables
+## 📊 Project Highlights
 
-Create a `.env` file in the root directory:
+### Technical Challenges Overcome
+- **Authentication Flow**: Designed secure JWT-based authentication with 10-minute token expiration
+- **Database Relationships**: Implemented complex many-to-many relationships for follow system with proper cascading deletes
+- **Performance**: Optimized database queries with indexing and cursor-based pagination for large datasets
+- **File Upload Security**: Integrated Cloudinary with validation and error handling for profile photo uploads
+- **Rate Limiting**: Implemented custom rate limiting middleware to prevent API abuse
 
-```env
-# Server Configuration
-PORT=3000
+### Testing Strategy
+- **Test-Driven Development**: Comprehensive testing approach with Jest and Supertest
+- **Comprehensive Coverage**: Integration tests for API endpoints, authentication, and error handling
+- **Test Utilities**: Created reusable helpers for authentication and database operations
+- **Continuous Testing**: Jest watch mode for development efficiency
 
-# Database Configuration
-DATABASE_URL="postgresql://username:password@localhost:5432/social_media_db?schema=public"
+## 🏗 Architecture Overview
 
-# JWT Configuration
-JWT_SECRET=your-super-secret-jwt-key-change-this-in-production
-
-# Cloudinary Configuration
-CLOUDINARY_CLOUD_NAME=your-cloud-name
-CLOUDINARY_API_KEY=your-api-key
-CLOUDINARY_API_SECRET=your-api-secret
 ```
-
-**Required Variables:**
-- **PORT**: Server port (default: 3000)
-- **DATABASE_URL**: PostgreSQL connection string
-- **JWT_SECRET**: Secret key for JWT tokens (use strong string in production)
-- **CLOUDINARY_CLOUD_NAME**: Get from Cloudinary dashboard
-- **CLOUDINARY_API_KEY**: Get from Cloudinary dashboard  
-- **CLOUDINARY_API_SECRET**: Get from Cloudinary dashboard
-
-## 📡 API Endpoints
-
-### Base URL
+┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
+│   Client App    │───▶│   Express API   │───▶│  PostgreSQL DB  │
+│                 │    │                 │    │                 │
+│ - Frontend      │    │ - JWT Auth      │    │ - Users         │
+│ - File Uploads  │    │ - Rate Limiting │    │ - Posts         │
+│ - API Calls     │    │ - Validation    │    │ - Comments      │
+└─────────────────┘    └─────────────────┘    │ - Likes         │
+                                │              │ - Follows       │
+                                ▼              └─────────────────┘
+                       ┌─────────────────┐
+                       │   Cloudinary    │
+                       │                 │
+                       │ - Profile Photos│
+                       │ - File Storage  │
+                       └─────────────────┘
 ```
-http://localhost:3000
-```
-
-### Authentication Header
-```
-Authorization: Bearer <your-jwt-token>
-```
-
-### 🔐 Auth Routes
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| POST | `/auth/signup` | User registration |
-| POST | `/auth/login` | User login |
-
-### 👤 User Routes
-| Method | Endpoint | Auth Required | Description |
-|--------|----------|---------------|-------------|
-| GET | `/users/` | No | Search users by username |
-| GET | `/users/me` | Yes | Get current user profile |
-| PUT | `/users/me` | Yes | Update user profile |
-| POST | `/users/me/photo` | Yes | Upload profile photo |
-| DELETE | `/users/me/photo` | Yes | Delete profile photo |
-| GET | `/users/:username` | No | Get public user profile |
-
-### 🤝 Follow Routes
-| Method | Endpoint | Auth Required | Description |
-|--------|----------|---------------|-------------|
-| POST | `/follow/:followingId` | Yes | Follow a user |
-| DELETE | `/follow/:followingId` | Yes | Unfollow a user |
-| GET | `/follow/followers/:userId` | No | Get followers list |
-| GET | `/follow/following/:userId` | No | Get following list |
-| GET | `/follow/stats/:userId` | No | Get follow statistics |
-
-### 📝 Post Routes
-| Method | Endpoint | Auth Required | Description |
-|--------|----------|---------------|-------------|
-| POST | `/posts` | Yes | Create a new post |
-| GET | `/posts/:id` | No | Get post by ID |
-| PUT | `/posts/:id` | Yes | Update post (author only) |
-| DELETE | `/posts/:id` | Yes | Delete post (author only) |
-| POST | `/posts/:postId/like` | Yes | Like a post |
-| DELETE | `/posts/:postId/like` | Yes | Unlike a post |
-| GET | `/users/:username/posts` | No | Get posts by username (paginated) |
-| GET | `/users/me/posts` | Yes | Get current user's posts (paginated) |
-
-### 💬 Comment Routes
-| Method | Endpoint | Auth Required | Description |
-|--------|----------|---------------|-------------|
-| POST | `/posts/:postId/comments` | Yes | Create comment on post |
-| GET | `/posts/:postId/comments` | No | Get comments for post (paginated) |
-| DELETE | `/comments/:commentId` | Yes | Delete comment (author only) |
-
-### 📰 Feed Routes
-| Method | Endpoint | Auth Required | Description |
-|--------|----------|---------------|-------------|
-| GET | `/feed/home` | Yes | Get home feed (posts from followed users) |
-| GET | `/feed/explore` | No | Get explore feed (all posts, public) |
-
-## 🔍 User Search System
-
-### Search Endpoint
-```http
-GET /users/?q=search_query
-```
-
-**Description**: Search for users by username with partial, case-insensitive matching.
-
-**Parameters:**
-- `q` (query parameter): Search query string
-  - **Required**: Yes
-  - **Minimum length**: 3 characters
-  - **Maximum length**: 20 characters  
-  - **Allowed characters**: lowercase letters, numbers, underscores
-  - **Format**: Matches username validation patterns
-
-**Search Behavior:**
-- **Partial matching**: Searches anywhere within username
-- **Case-insensitive**: `john` matches `JohnDoe`, `johnsmith`, etc.
-- **Alphabetical sorting**: Results sorted by username A-Z
-
-**Response Format:**
-```json
-{
-  "users": [
-    {
-      "id": 1,
-      "username": "johndoe",
-      "displayName": "John Doe",
-      "profilePhotoUrl": "https://example.com/photo.jpg"
-    },
-    {
-      "id": 2,
-      "username": "johnsmith",
-      "displayName": "John Smith", 
-      "profilePhotoUrl": null
-    }
-  ]
-}
-```
-
-**Example Requests:**
-
-**Search for users containing "john":**
-```http
-GET /users/?q=john
-```
-
-**Search for users containing "dev":**
-```http
-GET /users/?q=dev
-```
-
-**Success Response (200):**
-```json
-{
-  "users": [
-    {
-      "id": 1,
-      "username": "developer123",
-      "displayName": "Developer",
-      "profilePhotoUrl": "https://example.com/dev.jpg"
-    },
-    {
-      "id": 2,
-      "username": "dev_user",
-      "displayName": "Dev User",
-      "profilePhotoUrl": null
-    }
-  ]
-}
-```
-
-**Empty Results (200):**
-```json
-{
-  "users": []
-}
-```
-
-**Error Responses:**
-
-**Missing query parameter (400):**
-```json
-{
-  "error": "Search query is required",
-  "field": "q"
-}
-```
-
-**Query too short (400):**
-```http
-GET /users/?q=ab
-```
-```json
-{
-  "error": "Username must be 3-20 characters long and contain only lowercase letters, numbers, and underscores",
-  "field": "q"
-}
-```
-
-**Invalid characters (400):**
-```http
-GET /users/?q=John@
-```
-```json
-{
-  "error": "Username must be 3-20 characters long and contain only lowercase letters, numbers, and underscores",
-  "field": "q"
-}
-```
-
-**Database error (500):**
-```json
-{
-  "error": "Database operation failed"
-}
-```
-
-**Search Examples:**
-- `q=john` → Matches: `johndoe`, `johnsmith`, `myjohn`, `john123`
-- `q=dev` → Matches: `developer`, `dev_user`, `code_dev`, `devmaster`
-- `q=123` → Matches: `user123`, `test123`, `admin123`
-- `q=_` → Matches: `user_name`, `test_user`, `admin_account`
-
-**Performance Notes:**
-- Username field is indexed for fast lookups
-- Results limited to essential user data fields
-- Case-insensitive search optimized for performance
-
-### 🏥 Health Check
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/health` | Server status check |
-
-## 🔐 Authentication Flow
-
-1. Register via `POST /auth/signup`
-2. Login via `POST /auth/login` to get JWT token
-3. Include token in Authorization header for protected routes
-4. Token expires after 10 minutes - re-login required
-
-## 📝 Comment System
-
-### Comment Data Model
-```json
-{
-  "id": 1,
-  "content": "This is a comment",
-  "postId": 123,
-  "authorId": 456,
-  "createdAt": "2024-01-01T00:00:00.000Z",
-  "author": {
-    "id": 456,
-    "username": "johndoe",
-    "displayName": "John Doe"
-  }
-}
-```
-
-**Note:** The author object structure varies by endpoint:
-- **Create Comment** returns: `id`, `username`, `displayName`
-- **Get Comments** returns: `id`, `username`, `profilePhotoUrl`
-
-### Create Comment
-```http
-POST /posts/:postId/comments
-Authorization: Bearer <jwt-token>
-Content-Type: application/json
-
-{
-  "content": "This is a great post!"
-}
-```
-
-**Success Response (201):**
-```json
-{
-  "id": 789,
-  "content": "This is a great post!",
-  "postId": 123,
-  "authorId": 456,
-  "createdAt": "2024-01-01T00:00:00.000Z",
-  "author": {
-    "id": 456,
-    "username": "johndoe",
-    "displayName": "John Doe"
-  }
-}
-```
-
-### Get Comments
-```http
-GET /posts/:postId/comments?page=1&limit=10
-```
-
-**Success Response (200):**
-```json
-{
-  "comments": [
-    {
-      "id": 789,
-      "content": "This is a great post!",
-      "postId": 123,
-      "authorId": 456,
-      "createdAt": "2024-01-01T00:00:00.000Z",
-      "author": {
-        "id": 456,
-        "username": "johndoe",
-        "profilePhotoUrl": "https://example.com/photo.jpg"
-      }
-    }
-  ],
-  "pagination": {
-    "page": 1,
-    "limit": 10,
-    "total": 25,
-    "totalPages": 3
-  }
-}
-```
-
-### Delete Comment
-```http
-DELETE /comments/:commentId
-Authorization: Bearer <jwt-token>
-```
-
-**Success Response (200):**
-```json
-{
-  "message": "Comment deleted successfully",
-  "deletedCommentId": 789
-}
-```
-
-**Comment Rules:**
-- Comments limited to 100 characters
-- Newest comments appear first
-- Only comment authors can delete their comments
-- Public read access to comments
-- Pagination supported
-
-## 📝 Post System
-
-### Post Data Model
-```json
-{
-  "id": 1,
-  "content": "This is the post content",
-  "authorId": 123,
-  "createdAt": "2024-01-01T00:00:00.000Z",
-  "updatedAt": "2024-01-01T00:00:00.000Z",
-  "author": {
-    "id": 123,
-    "username": "johndoe",
-    "displayName": "John Doe",
-    "profilePhotoUrl": "https://example.com/photo.jpg"
-  },
-  "likesCount": 42,
-  "isLikedByCurrentUser": true
-}
-```
-
-### Get Post by ID
-```http
-GET /posts/:id
-```
-
-**Description:** Retrieve a single post by its ID. Includes author information, like count, and like status for authenticated users.
-
-**Success Response (200):**
-```json
-{
-  "post": {
-    "id": 1,
-    "content": "This is the post content",
-    "authorId": 123,
-    "createdAt": "2024-01-01T00:00:00.000Z",
-    "updatedAt": "2024-01-01T00:00:00.000Z",
-    "author": {
-      "id": 123,
-      "username": "johndoe",
-      "displayName": "John Doe",
-      "profilePhotoUrl": "https://example.com/photo.jpg"
-    },
-    "likesCount": 42,
-    "isLikedByCurrentUser": true
-  }
-}
-```
-
-**Error Responses:**
-```json
-// 400 - Invalid post ID
-{ "error": "Invalid post ID", "field": "id" }
-
-// 404 - Post not found
-{ "error": "Post not found", "field": "id" }
-
-// 500 - Server error
-{ "error": "Database operation failed" }
-```
-
-**Features:**
-- **Public Access**: No authentication required
-- **Author Information**: Includes author's username, display name, and profile photo
-- **Like Status**: For authenticated users, includes whether the current user has liked the post
-- **Like Count**: Always includes total number of likes on the post
-
-### Like Endpoints
-
-#### Like a Post
-```http
-POST /posts/:postId/like
-Authorization: Bearer <jwt-token>
-```
-
-**Success Response (201):**
-```json
-{
-  "message": "Post liked successfully",
-  "likeId": 123
-}
-```
-
-**Error Responses:**
-```json
-// 409 - Already liked
-{ "error": "Post already liked", "field": "postId" }
-
-// 404 - Post not found
-{ "error": "Post not found", "field": "postId" }
-
-// 401 - Unauthorized
-{ "error": "Invalid or expired token" }
-
-// 400 - Invalid post ID
-{ "error": "Invalid post ID", "field": "postId" }
-```
-
-#### Unlike a Post
-```http
-DELETE /posts/:postId/like
-Authorization: Bearer <jwt-token>
-```
-
-**Success Response (200):**
-```json
-{
-  "message": "Post unliked successfully", 
-  "likeId": 123
-}
-```
-
-**Error Responses:**
-```json
-// 404 - Like not found
-{ "error": "Like not found", "field": "postId" }
-
-// 401 - Unauthorized
-{ "error": "Invalid or expired token" }
-
-// 400 - Invalid post ID
-{ "error": "Invalid post ID", "field": "postId" }
-```
-
-### Pagination
-For paginated endpoints, use query parameters:
-- `page`: Page number (default: 1, min: 1)
-- `limit`: Items per page (default: 10, min: 1, max: 50)
-
-Response format:
-```json
-{
-  "posts": [...],
-  "pagination": {
-    "page": 1,
-    "limit": 10,
-    "total": 25,
-    "totalPages": 3
-  }
-}
-```
-
-## ❌ Error Handling
-
-All errors follow this format:
-```json
-{
-  "error": "Error message description",
-  "field": "field_name" // Optional for validation errors
-}
-```
-
-**Common Status Codes:**
-- `400` - Invalid input data
-- `401` - Invalid credentials/token
-- `409` - Resource already exists
-- `500` - Server error
-
-## 🧪 Testing & TDD
-
-### Test-Driven Development Approach
-
-Implemented TDD for the comments system using Red-Green-Refactor cycle with Jest and Supertest.
-
-### Test Structure
-```
-tests/
-├── integration/comments.test.js    # API integration tests
-├── helpers/                        # Test utilities
-├── envSetup.js                     # Test environment
-└── setup.js                        # Test cleanup
-```
-
-### Test Coverage
-
-**Comment Creation**: Authentication, validation, error handling
-**Comment Retrieval**: Pagination, response structure, author data
-**Comment Deletion**: Authorization, permissions, edge cases
-
-### Test Utilities
-
-- **Auth Helpers**: JWT token generation for test users
-- **Database Helpers**: Test data creation and management
-
-### Running Tests
-```bash
-npm test              # Run all tests
-npm run test:watch    # Watch mode
-npm run test:coverage # Coverage report
-```
-
-The comments feature demonstrates comprehensive testing with Jest and Supertest, covering API endpoints, authentication/authorization, error handling, input validation, pagination, and database operations for robust, production-ready functionality.
 
 ## 📁 Project Structure
 
 ```
 social-media-backend/
-├── config/              # Cloudinary configuration
-├── controllers/         # Route handlers (auth, posts, users, follows)
-├── middleware/          # Custom middleware (auth, upload)
-├── prisma/             # Database schema, migrations, and client
-├── routes/             # API routes (auth, posts, users, follows)
+├── controllers/         # Route handlers and business logic
+├── middleware/          # Custom middleware (auth, rate limiting)
+├── routes/             # API route definitions
+├── prisma/             # Database schema and migrations
 ├── tests/              # Test suite and TDD implementation
-│   ├── integration/    # Integration tests
-│   ├── helpers/        # Test utilities and helpers
-│   ├── envSetup.js     # Test environment configuration
-│   └── setup.js        # Test cleanup and teardown
-├── .env.example        # Environment variables template
-├── .gitignore          # Git ignore patterns
-├── databaseQueries.js  # Database operations
-├── jest.config.js      # Jest testing configuration
-├── package.json        # Dependencies and scripts
-├── prisma.config.ts    # Prisma configuration
-├── server.js          # Server entry point
-├── utils.js           # Utility functions
-└── README.md          # This file
+├── config/             # External service configurations
+├── docs/               # Detailed documentation
+└── utils.js           # Utility functions
 ```
 
-## 🗄 Database Schema
+## 🧪 Testing
 
-The application uses PostgreSQL with following main models:
-- **User**: User profiles with authentication and details
-- **Post**: Social media posts with content and timestamps
-- **Follow**: Many-to-many relationship for following system
-- **Comment**: User comments on posts with author information
-- **Like**: User likes on posts and comments
-
-All models include proper indexing, cascading deletes, and constraints for data integrity.
-
-## 📰 Feed System
-
-The feed system provides two endpoints for consuming social media content with cursor-based pagination for optimal performance.
-
-### Feed Data Model
-```json
-{
-  "posts": [
-    {
-      "id": 1,
-      "content": "This is a post",
-      "authorId": 123,
-      "createdAt": "2024-01-01T00:00:00.000Z",
-      "updatedAt": "2024-01-01T00:00:00.000Z",
-      "author": {
-        "id": 123,
-        "username": "johndoe",
-        "displayName": "John Doe",
-        "profilePhotoUrl": "https://example.com/photo.jpg"
-      },
-      "likesCount": 42,
-      "commentsCount": 8,
-      "isLikedByCurrentUser": true
-    }
-  ],
-  "nextCursor": "eyJpZCI6MTIzLCJjcmVhdGVkQXQiOiIyMDI0LTAxLTAxVDAwOjAwOjAwLjAwMFoifQ==",
-  "hasMore": true
-}
+```bash
+npm test              # Run all tests
+npm run test:watch    # Watch mode for development
+npm run test:coverage # Coverage report
 ```
 
-### Cursor Pagination
+**Test Coverage Areas:**
+- Authentication & Authorization
+- API Endpoint Validation
+- Error Handling
+- Database Operations
+- Rate Limiting
+- File Upload Operations
 
-Both feed endpoints use cursor-based pagination for optimal performance:
+## 📚 Documentation
 
-**Query Parameters:**
-- `cursor` (optional): Base64-encoded cursor string for pagination
-- `limit` (optional): Number of posts to return (default: 10, max: 50)
+- **[API Documentation](docs/API.md)** - Complete API reference with examples
+- **[Deployment Guide](docs/DEPLOYMENT.md)** - Production setup and configuration
+- **[Architecture Details](docs/ARCHITECTURE.md)** - Technical architecture and design decisions
 
-**Cursor Format:**
-The cursor is a base64-encoded JSON object containing:
-```json
-{
-  "id": 123,
-  "createdAt": "2024-01-01T00:00:00.000Z"
-}
-```
+## 🚀 Future Enhancements
 
-**Pagination Flow:**
-1. **First Request**: No cursor required
-2. **Subsequent Requests**: Use `nextCursor` from previous response
-3. **End of Feed**: `hasMore` will be `false` and `nextCursor` will be `null`
+- **Real-time Features**: WebSocket integration for live notifications (planned)
+- **Caching Layer**: Redis implementation for performance optimization
+- **Analytics**: User engagement and content performance metrics
+- **Microservices**: Split into user service, post service, etc.
+- **GraphQL**: Alternative API interface for complex queries
 
-### 🏠 Home Feed
+## 📄 License
 
-**Endpoint:** `GET /feed/home`
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-**Description:** Returns posts from users that the authenticated user follows. Requires authentication.
+---
 
-**Request:**
-```http
-GET /feed/home?limit=10
-Authorization: Bearer <jwt-token>
-```
-
-**Response:**
-```json
-{
-  "posts": [
-    {
-      "id": 1,
-      "content": "Great weather today!",
-      "authorId": 456,
-      "createdAt": "2024-01-01T12:00:00.000Z",
-      "updatedAt": "2024-01-01T12:00:00.000Z",
-      "author": {
-        "id": 456,
-        "username": "jane_doe",
-        "displayName": "Jane Doe",
-        "profilePhotoUrl": "https://example.com/jane.jpg"
-      },
-      "likesCount": 15,
-      "commentsCount": 3,
-      "isLikedByCurrentUser": true
-    }
-  ],
-  "nextCursor": "eyJpZCI6MSwiY3JlYXRlZEF0IjoiMjAyNC0wMS0wMVQxMjowMDowMC4wMDBaIn0=",
-  "hasMore": true
-}
-```
-
-**Features:**
-- **Authentication Required**: Only authenticated users can access
-- **Followed Users Only**: Shows posts from users you follow
-- **Like Status**: Always includes `isLikedByCurrentUser` (true/false)
-- **Performance**: Optimized with database indexes and batch queries
-
-**Error Responses:**
-```json
-// 401 - Not authenticated
-{ "error": "Invalid or expired token" }
-
-// 400 - Invalid limit
-{ "error": "Invalid limit (must be between 1 and 50)", "field": "limit" }
-
-// 400 - Invalid cursor
-{ "error": "Invalid or malformed cursor", "field": "cursor" }
-```
-
-### 🔍 Explore Feed
-
-**Endpoint:** `GET /feed/explore`
-
-**Description:** Returns all posts ordered by most recent. Public endpoint with optional authentication.
-
-**Request (Unauthenticated):**
-```http
-GET /feed/explore?limit=10
-```
-
-**Request (Authenticated):**
-```http
-GET /feed/explore?limit=10
-Authorization: Bearer <jwt-token>
-```
-
-**Response:**
-```json
-{
-  "posts": [
-    {
-      "id": 2,
-      "content": "Hello world!",
-      "authorId": 789,
-      "createdAt": "2024-01-01T13:00:00.000Z",
-      "updatedAt": "2024-01-01T13:00:00.000Z",
-      "author": {
-        "id": 789,
-        "username": "bob_smith",
-        "displayName": "Bob Smith",
-        "profilePhotoUrl": null
-      },
-      "likesCount": 8,
-      "commentsCount": 1,
-      "isLikedByCurrentUser": false
-    }
-  ],
-  "nextCursor": "eyJpZCI6MiwiY3JlYXRlZEF0IjoiMjAyNC0wMS0wMVQxMzowMDowMC4wMDBaIn0=",
-  "hasMore": true
-}
-```
-
-**Features:**
-- **Public Access**: No authentication required
-- **All Posts**: Shows posts from all users
-- **Optional Auth**: Like status only available for authenticated users
-- **Like Status**: 
-  - Authenticated: `isLikedByCurrentUser` = true/false
-  - Unauthenticated: `isLikedByCurrentUser` = false
-- **Performance**: Optimized with dedicated database index
-
-### 🔄 Pagination Examples
-
-**First Request:**
-```http
-GET /feed/explore?limit=5
-```
-
-**Response:**
-```json
-{
-  "posts": [...],
-  "nextCursor": "eyJpZCI6NSwiY3JlYXRlZEF0IjoiMjAyNC0wMS0wMVQxNDowMDowMC4wMDBaIn0=",
-  "hasMore": true
-}
-```
-
-**Next Request:**
-```http
-GET /feed/explore?limit=5&cursor=eyJpZCI6NSwiY3JlYXRlZEF0IjoiMjAyNC0wMS0wMVQxNDowMDowMC4wMDBaIn0=
-```
-
-**Final Page:**
-```json
-{
-  "posts": [...],
-  "nextCursor": null,
-  "hasMore": false
-}
-```
+**Built with ❤️ as a capstone project for The Odin Project**
