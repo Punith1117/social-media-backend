@@ -307,7 +307,9 @@ const getPostById = async (postId) => {
             author: {
                 select: {
                     id: true,
-                    username: true
+                    username: true,
+                    displayName: true,
+                    profilePhotoUrl: true
                 }
             },
             _count: {
