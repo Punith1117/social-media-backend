@@ -501,7 +501,7 @@ const getCommentsByPost = async (postId, page = 1, limit = 10) => {
                     select: {
                         id: true,
                         username: true,
-                        displayName: true
+                        profilePhotoUrl: true
                     }
                 }
             }
