@@ -306,6 +306,10 @@ GET /users/?q=John@
 }
 ```
 
+**Note:** The author object structure varies by endpoint:
+- **Create Comment** returns: `id`, `username`, `displayName`
+- **Get Comments** returns: `id`, `username`, `profilePhotoUrl`
+
 ### Create Comment
 ```http
 POST /posts/:postId/comments
@@ -341,7 +345,20 @@ GET /posts/:postId/comments?page=1&limit=10
 **Success Response (200):**
 ```json
 {
-  "comments": [...],
+  "comments": [
+    {
+      "id": 789,
+      "content": "This is a great post!",
+      "postId": 123,
+      "authorId": 456,
+      "createdAt": "2024-01-01T00:00:00.000Z",
+      "author": {
+        "id": 456,
+        "username": "johndoe",
+        "profilePhotoUrl": "https://example.com/photo.jpg"
+      }
+    }
+  ],
   "pagination": {
     "page": 1,
     "limit": 10,
@@ -392,6 +409,52 @@ Authorization: Bearer <jwt-token>
   "isLikedByCurrentUser": true
 }
 ```
+
+### Get Post by ID
+```http
+GET /posts/:id
+```
+
+**Description:** Retrieve a single post by its ID. Includes author information, like count, and like status for authenticated users.
+
+**Success Response (200):**
+```json
+{
+  "post": {
+    "id": 1,
+    "content": "This is the post content",
+    "authorId": 123,
+    "createdAt": "2024-01-01T00:00:00.000Z",
+    "updatedAt": "2024-01-01T00:00:00.000Z",
+    "author": {
+      "id": 123,
+      "username": "johndoe",
+      "displayName": "John Doe",
+      "profilePhotoUrl": "https://example.com/photo.jpg"
+    },
+    "likesCount": 42,
+    "isLikedByCurrentUser": true
+  }
+}
+```
+
+**Error Responses:**
+```json
+// 400 - Invalid post ID
+{ "error": "Invalid post ID", "field": "id" }
+
+// 404 - Post not found
+{ "error": "Post not found", "field": "id" }
+
+// 500 - Server error
+{ "error": "Database operation failed" }
+```
+
+**Features:**
+- **Public Access**: No authentication required
+- **Author Information**: Includes author's username, display name, and profile photo
+- **Like Status**: For authenticated users, includes whether the current user has liked the post
+- **Like Count**: Always includes total number of likes on the post
 
 ### Like Endpoints
 
