@@ -118,6 +118,71 @@ CLOUDINARY_API_SECRET=your-api-secret
 
 ## Production Deployment
 
+### Render Deployment
+
+#### 1. Create Render Account
+- Sign up at [render.com](https://render.com)
+- Connect your GitHub repository
+
+#### 2. Environment Variables
+Set the following environment variables in your Render dashboard:
+
+```env
+# Server Configuration (Render automatically sets PORT)
+PORT=3000
+
+# Database Configuration (choose Supabase connection pooling for production)
+DATABASE_URL="postgresql://postgres.[YOUR-PROJECT-REF]:[YOUR-PASSWORD]@aws-1-as-north-1.pooler.supabase.com:6543/postgres?pgbouncer=true"
+
+# JWT Configuration
+JWT_SECRET=your-super-secret-jwt-key-change-this-in-production
+
+# Cloudinary Configuration
+CLOUDINARY_CLOUD_NAME=your-cloud-name
+CLOUDINARY_API_KEY=your-api-key
+CLOUDINARY_API_SECRET=your-api-secret
+```
+
+#### 3. Database URL Options for Supabase
+
+**Connection Pooling URL (Recommended for Production):**
+```
+postgresql://postgres.[YOUR-PROJECT-REF]:[YOUR-PASSWORD]@aws-1-as-north-1.pooler.supabase.com:6543/postgres?pgbouncer=true
+```
+- Use for application connections
+- Better performance and resource management
+- Handles high traffic efficiently
+
+**Direct URL (For Migrations):**
+```
+postgresql://postgres.[YOUR-PROJECT-REF]:[YOUR-PASSWORD]@aws-1-as-north-1.pooler.supabase.com:5432/postgres
+```
+- Use for migrations and schema changes
+- Direct database access
+- Administrative operations
+
+#### 4. Free Tier Limitations
+
+**Important Notes:**
+- **Sleep Mode**: Free tier instances sleep after 15 minutes of inactivity
+- **Cold Starts**: May take 30-60 seconds to wake from sleep
+- **Health Checks**: Use health checks to keep instances awake during critical periods
+- **Production Consideration**: Upgrade to paid tier for applications requiring 24/7 uptime
+
+#### 5. Build Command
+```bash
+npm install
+npm run db:generate
+```
+
+#### 6. Start Command
+```bash
+npm start
+```
+
+#### 7. Health Check Endpoint
+Render will automatically use `/health` endpoint for health checks
+
 ### Environment Preparation
 ```bash
 export NODE_ENV=production
@@ -138,7 +203,11 @@ export NODE_ENV=production
 
 ### Health Check
 ```bash
+# For local development
 curl http://localhost:3000/health
+
+# For Render deployment (replace your-app-name with your actual Render app name)
+curl https://your-app-name.onrender.com/health
 ```
 
 Expected response:
