@@ -1,12 +1,37 @@
 # Social Media Backend API | Node.js Express REST API
 
+![Node.js](https://img.shields.io/badge/node.js-%23339933.svg?style=for-the-badge&logo=node.js&logoColor=white)
+![Express.js](https://img.shields.io/badge/Express.js-000000?style=for-the-badge&logo=express&logoColor=white)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-316192?style=for-the-badge&logo=postgresql&logoColor=white)
+![Prisma](https://img.shields.io/badge/Prisma-3982CE?style=for-the-badge&logo=Prisma&logoColor=white)
+![Cloudinary](https://img.shields.io/badge/Cloudinary-3448C5?style=for-the-badge&logo=Cloudinary&logoColor=white)
+![Jest](https://img.shields.io/badge/Jest-C21325?style=for-the-badge&logo=jest&logoColor=white)
+![Postman](https://img.shields.io/badge/Postman-FF6C37?style=for-the-badge&logo=postman&logoColor=white)
+
 A production-ready RESTful API for social media applications built with Node.js, Express, PostgreSQL, and Prisma. This capstone project demonstrates full-stack development capabilities with secure authentication, social features, and scalable architecture.
+
+**Frontend Repository:** [https://github.com/Punith1117/social-media-frontend](https://github.com/Punith1117/social-media-frontend)
+
+## Table of Contents
+
+- [Project Purpose](#-project-purpose)
+- [Learning Objectives](#-learning-objectives)
+- [Core Features](#-core-features)
+- [Project Highlights](#-project-highlights)
+- [Tech Stack](#-tech-stack)
+- [Quick Start](#-quick-start)
+- [Architecture Overview](#-architecture-overview)
+- [Project Structure](#-project-structure)
+- [Testing](#-testing)
+- [Documentation](#-documentation)
+- [Deployment](#-deployment)
+- [Future Enhancements](#-future-enhancements)
 
 ## 🎯 Project Purpose
 
 Built as the final capstone project for The Odin Project's full-stack curriculum, this social media backend showcases the ability to design and implement complex, production-grade APIs that handle authentication, data relationships, file uploads, and performance optimization.
 
-## 💡 Key Learning Outcomes
+## 💡 Learning Objectives
 
 - **RESTful API Design**: Implemented proper HTTP methods, status codes, and error handling following industry best practices
 - **Authentication & Security**: JWT token-based authentication with bcrypt password hashing and rate limiting for security
@@ -30,6 +55,21 @@ Built as the final capstone project for The Odin Project's full-stack curriculum
 - **Rate Limiting** for API abuse prevention
 - **RESTful Design** following industry best practices
 
+## 📊 Project Highlights
+
+### Technical Challenges Overcome
+- **Authentication Flow**: Designed secure JWT-based authentication with 10-minute token expiration
+- **Database Relationships**: Implemented complex many-to-many relationships for follow system with proper cascading deletes
+- **Performance**: Optimized database queries with indexing and cursor-based pagination for large datasets
+- **File Upload Security**: Integrated Cloudinary with validation and error handling for profile photo uploads
+- **Rate Limiting**: Implemented custom rate limiting middleware to prevent API abuse
+
+### Testing Strategy
+- **Test-Driven Development**: Comprehensive testing approach with Jest and Supertest
+- **Comprehensive Coverage**: Integration tests for API endpoints, authentication, and error handling
+- **Test Utilities**: Created reusable helpers for authentication and database operations
+- **Continuous Testing**: Jest watch mode for development efficiency
+
 ## 🛠 Tech Stack
 
 - **Backend**: Node.js, Express.js
@@ -41,6 +81,10 @@ Built as the final capstone project for The Odin Project's full-stack curriculum
 - **Development**: Prisma Studio, hot reload
 
 ## 🚀 Quick Start
+
+**Prerequisites:**
+- Node.js 18+
+- PostgreSQL
 
 1. **Clone and install**
    ```bash
@@ -65,21 +109,6 @@ Built as the final capstone project for The Odin Project's full-stack curriculum
    ```bash
    npm run dev
    ```
-
-## 📊 Project Highlights
-
-### Technical Challenges Overcome
-- **Authentication Flow**: Designed secure JWT-based authentication with 10-minute token expiration
-- **Database Relationships**: Implemented complex many-to-many relationships for follow system with proper cascading deletes
-- **Performance**: Optimized database queries with indexing and cursor-based pagination for large datasets
-- **File Upload Security**: Integrated Cloudinary with validation and error handling for profile photo uploads
-- **Rate Limiting**: Implemented custom rate limiting middleware to prevent API abuse
-
-### Testing Strategy
-- **Test-Driven Development**: Comprehensive testing approach with Jest and Supertest
-- **Comprehensive Coverage**: Integration tests for API endpoints, authentication, and error handling
-- **Test Utilities**: Created reusable helpers for authentication and database operations
-- **Continuous Testing**: Jest watch mode for development efficiency
 
 ## 🏗 Architecture Overview
 
@@ -131,6 +160,8 @@ npm run test:coverage # Coverage report
 - Rate Limiting
 - File Upload Operations
 
+**Manual API Testing:** Use Postman to test endpoints interactively. Refer to the API documentation for endpoint details.
+
 ## 📚 Documentation
 
 - **[API Documentation](docs/API.md)** - Complete API reference with examples
@@ -164,10 +195,6 @@ This application is configured for production deployment on Render cloud platfor
 - **Analytics**: User engagement and content performance metrics
 - **Microservices**: Split into user service, post service, etc.
 - **GraphQL**: Alternative API interface for complex queries
-
-## 📄 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ---
 
